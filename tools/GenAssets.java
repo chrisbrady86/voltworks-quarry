@@ -196,6 +196,14 @@ public class GenAssets {
 		LANG.put("gui." + NS + ".status.waiting", "Area not loaded");
 		LANG.put("gui." + NS + ".info", "Y %s · %sx%s · %s mined");
 		LANG.put("gui." + NS + ".info_done", "%sx%s · %s mined");
+		// JEI info pages (one entry per paragraph)
+		String jei = "jei." + NS + ".info.";
+		LANG.put(jei + "quarry.1", "Digs out the 9x9 area behind it (its front faces you when placed), layer by layer, from its own height down to the bottom of the world.");
+		LANG.put(jei + "quarry.2", "Needs Voltworks power through Copper Cable: 20 J/t while digging. Harder blocks take longer. Bedrock is skipped, water and lava are cleared, and chests in the way are emptied into the output.");
+		LANG.put(jei + "quarry.3", "Fills any chest next to it by itself; Voltworks item pipes pull from it too. A redstone signal pauses it. Takes Range, Fortune and Silk Touch upgrades, plus the Voltworks Speed, Capacity and Ejector upgrades.");
+		LANG.put(jei + "range_upgrade.1", "Quarry upgrade: makes the pit 8 blocks wider for each one (9x9, 17x17, 25x25, up to 33x33 with three). The quarry restarts from the top; dug-out air is skipped quickly.");
+		LANG.put(jei + "fortune_upgrade.1", "Quarry upgrade: one level of Fortune for each one, up to Fortune III. Each level uses 50% more power. Silk Touch overrides it.");
+		LANG.put(jei + "silk_touch_upgrade.1", "Quarry upgrade: mined blocks drop themselves (stone, ores, grass). Uses double power and overrides Fortune.");
 		Path guide = res.toAbsolutePath().getParent().getParent().getParent().resolve("tools/guide.txt");
 		String[] pages = Files.readString(guide).replace("\r\n", "\n").strip().split("\n---\n");
 		for (int i = 0; i < pages.length; i++) LANG.put("guide." + NS + ".page." + (i + 1), pages[i].strip());

@@ -7,16 +7,25 @@
 	"authors": ["Voltworks Team"],
 	"license": "MIT",
 	"icon": "assets/voltworks_quarry/icon.png",
+	"contact": {
+		"homepage": "https://github.com/chrisbrady86/voltworks-quarry",
+		"sources": "https://github.com/chrisbrady86/voltworks-quarry",
+		"issues": "https://github.com/chrisbrady86/voltworks-quarry/issues"
+	},
 	"environment": "*",
 	"entrypoints": {
 		"main": ["dev.voltworks.quarry.VoltworksQuarry"],
-		"client": ["dev.voltworks.quarry.client.VoltworksQuarryClient"]
+		"client": ["dev.voltworks.quarry.client.VoltworksQuarryClient"],
+		"jei_mod_plugin": ["dev.voltworks.quarry.client.jei.QuarryJeiPlugin"]
+	},
+	"suggests": {
+		"jei": "*"
 	},
 	"depends": {
 		"fabricloader": ">=0.20.1",
 		"minecraft": "~26.3",
 		"java": ">=25",
 		"fabric-api": "*",
-		"voltworks": ">=0.1.0"
+		"voltworks": ">=0.1.0 <0.2.0"
 	}
 }

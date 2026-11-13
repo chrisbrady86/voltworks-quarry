@@ -3,6 +3,14 @@ plugins {
 	id 'maven-publish'
 }
 
+repositories {
+	maven {
+		name = "BlameJared (JEI)"
+		url = "https://maven.blamejared.com/"
+		content { includeGroup "mezz.jei"; includeGroup "net.mezzdev.config" }
+	}
+}
+
 loom {
 	splitEnvironmentSourceSets()
 
@@ -22,6 +30,10 @@ dependencies {
 	// Voltworks Industrial: the quarry runs on its power network, uses its upgrades, pipes and wrench.
 	// On the classpath it is also loaded as a mod in runClient / runClientGameTest.
 	implementation files(project.voltworks_jar)
+
+	// JEI is optional: the quarry adds info pages when it is installed.
+	clientCompileOnly "mezz.jei:jei-${project.minecraft_version}-common-api:${project.jei_version}"
+	clientCompileOnly "mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}"
 }
 
 processResources {
@@ -69,4 +81,9 @@ fabricApi {
 		enableClientGameTests = true
 		eula = false
 	}
+}
+
+// The in-game test runs with the full JEI, so the info pages are registered for real.
+dependencies {
+	gametestRuntimeOnly "mezz.jei:jei-${project.minecraft_version}-fabric:${project.jei_version}"
 }

@@ -1,6 +1,6 @@
 # Voltworks Quarry
 
-An addon for [Voltworks Industrial](../voltworks) (Minecraft **26.3**, Fabric). It adds a powered **Quarry** that digs out a square pit, layer by layer, down to bedrock.
+An expansion for [Voltworks Industrial](https://github.com/chrisbrady86/voltworks-industrial) (Minecraft **26.3**, Fabric). Install it alongside Voltworks Industrial (it is required) and it adds a powered **Quarry** that digs out a square pit, layer by layer, down to bedrock.
 
 ![Logo](docs/images/logo.png)
 
@@ -18,7 +18,7 @@ An addon for [Voltworks Industrial](../voltworks) (Minecraft **26.3**, Fabric). 
   - **Range Upgrade**: +8 blocks wide each (9×9 → 17×17 → 25×25 → 33×33).
   - **Fortune Upgrade**: one Fortune level each, up to III; +50% power per level.
   - **Silk Touch Upgrade**: blocks drop themselves; double power. Overrides Fortune.
-- The **Voltworks Guide** gets extra Quarry pages at the end (from `tools/guide.txt`).
+- Fits into Voltworks: its items are in the Voltworks creative tab, the **Voltworks Guide** gets Quarry pages at the end (from `tools/guide.txt`), and with JEI installed every quarry item has an info page.
 
 Turning the quarry or changing its range restarts it from the top; air it already dug out is skipped quickly. It only works while its chunks are loaded.
 
@@ -37,7 +37,7 @@ cd ../voltworks-quarry && ./gradlew build
 ./gradlew runClientGameTest   # automated in-world test, expect "ALL CHECKS PASSED"
 ```
 
-To play: put `voltworks-quarry-<version>.jar`, the Voltworks jar and Fabric API in your `mods` folder.
+To play: put `voltworks-quarry-<version>.jar`, Voltworks Industrial 0.1.x and Fabric API in your `mods` folder. Voltworks Quarry 0.1.x works with Voltworks Industrial 0.1.x; with any other version (or without it) the game stops at startup with a message saying which version is needed. JEI is optional.
 
 ## Automated test
 

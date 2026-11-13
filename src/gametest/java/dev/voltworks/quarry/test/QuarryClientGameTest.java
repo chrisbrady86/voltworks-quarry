@@ -78,6 +78,12 @@ public class QuarryClientGameTest implements FabricClientGameTest {
 			context.waitTicks(30);
 			context.takeScreenshot("quarry-gui-paused");
 			world.getServer().runOnServer(server -> server.getPlayerList().getPlayers().get(0).closeContainer());
+			context.waitTicks(10); // let the close reach the client, or it would close JEI's screen too
+			// JEI (present in the test run): the Quarry's info page
+			context.runOnClient(client -> dev.voltworks.quarry.client.VoltworksQuarryClient.showRecipes.accept(new ItemStack(VoltworksQuarry.QUARRY)));
+			context.waitTicks(20);
+			context.takeScreenshot("quarry-jei");
+			context.runOnClient(client -> client.gui.setScreen(null));
 
 			if (!failures.isEmpty()) {
 				throw new AssertionError("Voltworks Quarry checks failed:\n - " + String.join("\n - ", failures));
