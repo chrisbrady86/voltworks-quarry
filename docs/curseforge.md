@@ -38,6 +38,7 @@ The launcher installs Required Dependencies for the player, so marking Voltworks
 ```
 First release. Requires Voltworks Industrial 0.1.x.
 - Quarry: digs the 9x9 area behind it, layer by layer, down to bedrock, on Voltworks power (20 J/t)
+- Quarry Markers: mark any rectangle (up to the Range Upgrade limit) for the quarry to dig instead
 - Skips bedrock, clears water and lava, empties chests in the way into its output
 - Fills adjacent chests by itself; Voltworks item pipes pull from it; redstone pauses it
 - Upgrades: Range (up to 33x33), Fortune (I-III), Silk Touch; also takes Voltworks Speed, Capacity and Ejector upgrades
@@ -59,6 +60,7 @@ First release. Requires Voltworks Industrial 0.1.x.
 - Put a **chest next to it** and it fills it by itself. Voltworks **item pipes** pull from it too, so you can send ores straight to your Crushers.
 - A **redstone signal** pauses it. A spinning **drill head on a laser** shows where it's digging.
 - Works with the Voltworks **Wrench**: rotate it, set its sides, pick it up.
+- Want it somewhere else? Place a **Quarry Marker** touching the quarry and another at the opposite corner: it digs the rectangle between them instead.
 
 ## 🔧 Upgrades
 | Upgrade | Effect |

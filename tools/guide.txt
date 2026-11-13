@@ -18,6 +18,14 @@ Bedrock is skipped. Water and lava are cleared. Chests in the way are emptied in
 
 A redstone signal pauses it.
 ---
+Marking an Area
+
+To dig somewhere else, put a Quarry Marker touching the quarry and another at the opposite corner.
+
+The quarry picks both up and digs the rectangle between them, corners included.
+
+Up to 9 across, 17/25/33 with Range upgrades.
+---
 Upgrades
 
 Range: +8 wide (up to 33x33).
@@ -30,6 +38,10 @@ Tips
 
 The GUI shows the layer, size and blocks mined.
 
-Turning the quarry or adding a Range upgrade restarts from the top; dug-out air is skipped fast.
+Turning the quarry, a Range upgrade or a new marked area restarts from the top; dug-out air is skipped fast.
+
+Keep cables and chests outside a marked area, or the quarry digs them up.
+
+Right-click a marker to see its partner. To go back to the square behind it, pick the quarry up and place it again.
 
 Keep the area's chunks loaded.

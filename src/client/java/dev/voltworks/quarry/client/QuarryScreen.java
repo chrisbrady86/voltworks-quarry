@@ -61,11 +61,14 @@ public class QuarryScreen extends AbstractContainerScreen<QuarryMenu> {
 			case PAUSED, WAITING -> 0xFF8A6A10;
 			default -> 0xFFB02020;
 		};
-		g.text(font, status.label(), x + 8, y + INFO_Y + 3, color, false);
-		Component info = status == QuarryBlockEntity.Status.FINISHED
-				? Component.translatable("gui.voltworks_quarry.info_done", menu.getSize(), menu.getSize(), menu.getBlocksMined())
-				: Component.translatable("gui.voltworks_quarry.info", menu.getLayerY(), menu.getSize(), menu.getSize(), menu.getBlocksMined());
-		g.text(font, info, x + imageWidth - 8 - font.width(info), y + INFO_Y + 3, 0xFF404040, false);
+		// Status on the title row (right), details under the output grid: long statuses never run into the details
+		g.text(font, status.label(), x + imageWidth - 8 - font.width(status.label()), y + 6, color, false);
+		Component info = switch (status) {
+			case FINISHED -> Component.translatable("gui.voltworks_quarry.info_done", menu.getWidth(), menu.getLength(), menu.getBlocksMined());
+			case AREA_TOO_BIG -> Component.translatable("gui.voltworks_quarry.info_too_big", menu.getWidth(), menu.getLength());
+			default -> Component.translatable("gui.voltworks_quarry.info", menu.getLayerY(), menu.getWidth(), menu.getLength(), menu.getBlocksMined());
+		};
+		g.text(font, info, x + QuarryMenu.OUTPUT_X - 1, y + INFO_Y + 3, 0xFF404040, false);
 	}
 
 	@Override

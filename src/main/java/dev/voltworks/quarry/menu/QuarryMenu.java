@@ -15,8 +15,8 @@ import net.minecraft.world.item.ItemStack;
 
 /** Quarry GUI: energy bar, 3x6 output, three upgrade slots and a status line. */
 public class QuarryMenu extends AbstractContainerMenu {
-	/** energy, capacity, progress, progressTotal, (unused), status, layer Y, size, mined low, mined high */
-	public static final int DATA_COUNT = 10;
+	/** energy, capacity, progress, progressTotal, (unused), status, layer Y, width, mined low, mined high, length */
+	public static final int DATA_COUNT = 11;
 	public static final int OUTPUT_X = 36, OUTPUT_Y = 17, UPGRADE_X = 152;
 	public static final int INVENTORY_Y = 102;
 	private static final int MACHINE_SLOTS = QuarryBlockEntity.OUTPUT_SLOTS + PoweredContainerBlockEntity.UPGRADE_SLOTS;
@@ -70,8 +70,13 @@ public class QuarryMenu extends AbstractContainerMenu {
 		return (short) data.get(6); // negative layers survive the short sync
 	}
 
-	public int getSize() {
+	/** Pit width (X) and length (Z): the marked area, or the default square. */
+	public int getWidth() {
 		return data.get(7);
+	}
+
+	public int getLength() {
+		return data.get(10);
 	}
 
 	public int getBlocksMined() {

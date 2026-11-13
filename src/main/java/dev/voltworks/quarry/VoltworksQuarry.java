@@ -3,6 +3,7 @@ package dev.voltworks.quarry;
 import dev.voltworks.Voltworks;
 import dev.voltworks.quarry.block.QuarryBlock;
 import dev.voltworks.quarry.block.QuarryBlockEntity;
+import dev.voltworks.quarry.block.QuarryMarkerBlock;
 import dev.voltworks.quarry.item.QuarryUpgradeItem;
 import dev.voltworks.quarry.menu.QuarryMenu;
 import java.util.function.Function;
@@ -35,6 +36,9 @@ public class VoltworksQuarry implements ModInitializer {
 	public static final Block QUARRY = registerBlock("quarry", p -> new QuarryBlock(() -> VoltworksQuarry.QUARRY_ENTITY, p),
 			BlockBehaviour.Properties.of().mapColor(MapColor.METAL).strength(5.0F, 8.0F).sound(SoundType.METAL)
 					.requiresCorrectToolForDrops().lightLevel(s -> s.getValue(QuarryBlock.LIT) ? 8 : 0));
+	public static final Block QUARRY_MARKER = registerBlock("quarry_marker", QuarryMarkerBlock::new,
+			BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).instabreak().noCollision().noOcclusion().sound(SoundType.METAL)
+					.lightLevel(s -> 7).pushReaction(net.minecraft.world.level.material.PushReaction.POPPED));
 	public static final BlockEntityType<QuarryBlockEntity> QUARRY_ENTITY = Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, id("quarry"),
 			FabricBlockEntityTypeBuilder.create(QuarryBlockEntity::new, QUARRY).build());
 	public static final MenuType<QuarryMenu> QUARRY_MENU = Registry.register(BuiltInRegistries.MENU, id("quarry"),
@@ -52,6 +56,7 @@ public class VoltworksQuarry implements ModInitializer {
 		// Listed at the end of the Voltworks creative tab
 		CreativeModeTabEvents.modifyOutputEvent(ResourceKey.create(Registries.CREATIVE_MODE_TAB, Voltworks.id("main"))).register(out -> {
 			out.accept(QUARRY);
+			out.accept(QUARRY_MARKER);
 			out.accept(RANGE_UPGRADE);
 			out.accept(FORTUNE_UPGRADE);
 			out.accept(SILK_TOUCH_UPGRADE);

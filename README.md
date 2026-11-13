@@ -14,6 +14,7 @@ An expansion for [Voltworks Industrial](https://github.com/chrisbrady86/voltwork
   - A redstone signal pauses it.
   - While it digs, a spinning drill head hangs from a red laser over the block it's mining, with breaking cracks.
   - Works with the Voltworks wrench: rotate it, configure sides, sneak + right-click to pick it up.
+- **Quarry Marker**: to dig somewhere other than the square behind the quarry, put one marker touching the quarry and another at the opposite corner. The quarry picks both up and digs the rectangle between them (corners included), from its own height down. The area can be up to 9 wide and long, or 17 / 25 / 33 with Range Upgrades; if Range Upgrades are taken out later, it stops with "Area too big". Right-click a marker to see which marker it pairs with. Keep cables and chests outside the marked area.
 - **Upgrades** (three slots, shared with Voltworks' Speed / Capacity / Ejector upgrades):
   - **Range Upgrade**: +8 blocks wide each (9×9 → 17×17 → 25×25 → 33×33).
   - **Fortune Upgrade**: one Fortune level each, up to III; +50% power per level.
@@ -25,6 +26,7 @@ Turning the quarry or changing its range restarts it from the top; air it alread
 ## Recipes
 
 - Quarry: steel, circuits, two diamond pickaxes, an Advanced Machine Frame and a Power Cell.
+- Quarry Marker (2): a redstone torch on a tin ingot.
 - Upgrades: tin + circuit + redstone around an Ender Pearl (Range), a Lapis Block (Fortune) or an Emerald (Silk Touch).
 
 ## Building and running
@@ -41,8 +43,8 @@ To play: put `voltworks-quarry-<version>.jar`, Voltworks Industrial 0.1.x and Fa
 
 ## Automated test
 
-`src/gametest/.../QuarryClientGameTest.java` builds five quarries in the sky above spawn and runs 900 ticks:
-fortune quarry (stone, iron ore, a chest of diamonds, bedrock, water, a dirt layer — all dug, bedrock kept, chest contents collected, nothing spilled, output pushed into the chest on top), silk touch quarry, a redstone-paused quarry, an unpowered quarry and a 17×17 Range quarry. Screenshots go to `build/run/clientGameTest/screenshots/`.
+`src/gametest/.../QuarryClientGameTest.java` builds eight quarries in the sky above spawn and runs 900 ticks:
+fortune quarry (stone, iron ore, a chest of diamonds, bedrock, water, a dirt layer — all dug, bedrock kept, chest contents collected, nothing spilled, output pushed into the chest on top), silk touch quarry, a redstone-paused quarry, an unpowered quarry, a 17×17 Range quarry, a quarry with a marked 5×4 area (only that area dug, markers picked up), a marked 13×13 area that becomes "Area too big" when its Range Upgrade is removed, and markers too far apart to pair. Screenshots go to `build/run/clientGameTest/screenshots/`.
 
 ## Assets
 

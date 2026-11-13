@@ -61,7 +61,9 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 
 	/** Shown in the GUI. */
 	public enum Status {
-		MINING, NO_POWER, OUTPUT_FULL, PAUSED, FINISHED, WAITING;
+		MINING, NO_POWER, OUTPUT_FULL, PAUSED, FINISHED, WAITING,
+		/** The marked area is wider or longer than the Range Upgrades allow. */
+		AREA_TOO_BIG;
 
 		public Component label() {
 			return Component.translatable("gui.voltworks_quarry.status." + name().toLowerCase(java.util.Locale.ROOT));
@@ -81,6 +83,11 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 	private int ejectTimer;
 	private @Nullable ItemStack tool;
 	private int toolKey = -1;
+	/** Area set with Quarry Markers, {minX, minZ, maxX, maxZ}; null = the default square behind the quarry. */
+	private int @Nullable [] markedArea;
+	private int markerScanTimer;
+	/** How often to look for a marker touching the quarry. */
+	private static final int MARKER_SCAN_INTERVAL = 40;
 
 	/** Synced to the GUI: the base machine values plus status, layer, size and blocks mined (split into two shorts). */
 	private final ContainerData quarryData = new ContainerData() {
@@ -89,7 +96,8 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 			return switch (id) {
 				case 5 -> status.ordinal();
 				case 6 -> layerY;
-				case 7 -> getSize();
+				case 7 -> areaWidth();
+				case 10 -> areaLength();
 				case 8 -> blocksMined & 0x7FFF;
 				case 9 -> blocksMined >>> 15;
 				default -> data.get(id);
@@ -122,6 +130,7 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 		return count;
 	}
 
+	/** The biggest width and length the pit may have: 9, +8 per Range Upgrade. */
 	public int getSize() {
 		return BASE_SIZE + SIZE_PER_RANGE * Math.min(MAX_RANGE_UPGRADES, countQuarryUpgrades(QuarryUpgradeItem.Type.RANGE));
 	}
@@ -171,6 +180,12 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 
 	/** Position {@code index} (0 .. size²-1) of a layer. Rows go away from the quarry and snake back and forth. */
 	private BlockPos positionAt(int index, int y) {
+		if (markedArea != null) {
+			// Marked area: rows run along X, one after another along Z, snaking back and forth
+			int w = areaWidth(), row = index / w, col = index % w;
+			if (row % 2 == 1) col = w - 1 - col;
+			return new BlockPos(markedArea[0] + col, y, markedArea[1] + row);
+		}
 		int size = getSize(), half = size / 2;
 		int row = index / size, col = index % size;
 		if (row % 2 == 1) col = size - 1 - col;
@@ -181,14 +196,55 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 
 	/** Corners of the area (inclusive), for the renderer and tests: {minX, minZ, maxX, maxZ}. */
 	public int[] areaBounds() {
+		if (markedArea != null) return markedArea.clone();
 		BlockPos a = positionAt(0, 0), b = positionAt(getSize() * getSize() - 1, 0);
 		BlockPos c = positionAt(getSize() - 1, 0);
 		return new int[]{Math.min(Math.min(a.getX(), b.getX()), c.getX()), Math.min(Math.min(a.getZ(), b.getZ()), c.getZ()),
 				Math.max(Math.max(a.getX(), b.getX()), c.getX()), Math.max(Math.max(a.getZ(), b.getZ()), c.getZ())};
 	}
 
+	/** Width (X) of the pit: the marked area, or the default square. */
+	public int areaWidth() {
+		return markedArea != null ? markedArea[2] - markedArea[0] + 1 : getSize();
+	}
+
+	/** Length (Z) of the pit. */
+	public int areaLength() {
+		return markedArea != null ? markedArea[3] - markedArea[1] + 1 : getSize();
+	}
+
+	public boolean hasMarkedArea() {
+		return markedArea != null;
+	}
+
+	private int cellsPerLayer() {
+		return areaWidth() * areaLength();
+	}
+
+	/**
+	 * A marker touching the quarry, paired with another marker in range, sets the area: the rectangle between them.
+	 * Both markers are picked up into the output.
+	 */
+	private void linkMarkers(ServerLevel level, BlockPos pos) {
+		for (Direction dir : Direction.values()) {
+			BlockPos marker = pos.relative(dir);
+			if (!level.getBlockState(marker).is(VoltworksQuarry.QUARRY_MARKER)) continue;
+			BlockPos partner = QuarryMarkerBlock.findPartner(level, marker, getSize());
+			if (partner == null) continue;
+			markedArea = QuarryMarkerBlock.rectangle(marker, partner);
+			for (BlockPos p : List.of(marker, partner)) {
+				level.removeBlock(p, false);
+				ItemStack rest = insert(new ItemStack(VoltworksQuarry.QUARRY_MARKER));
+				if (!rest.isEmpty()) overflow.add(rest);
+			}
+			level.playSound(null, pos, net.minecraft.sounds.SoundEvents.BEACON_ACTIVATE, net.minecraft.sounds.SoundSource.BLOCKS, 0.6F, 1.6F);
+			setChanged();
+			return;
+		}
+	}
+
 	private boolean shouldMine(ServerLevel level, BlockPos pos, BlockState state) {
-		if (state.isAir()) return false;
+		if (state.isAir() || pos.equals(worldPosition)) return false; // a marked area may run under the quarry itself
 		if (state.getBlock() instanceof LiquidBlock) return true; // cleared, so the pit doesn't flood
 		return state.getDestroySpeed(level, pos) >= 0; // bedrock, barriers, end portal frames...
 	}
@@ -219,13 +275,22 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 			overflow.removeIf(ItemStack::isEmpty);
 			if (!overflow.isEmpty()) return Status.OUTPUT_FULL;
 		}
+		if (--markerScanTimer <= 0) {
+			markerScanTimer = MARKER_SCAN_INTERVAL;
+			linkMarkers(level, pos);
+		}
+		if (markedArea != null && (areaWidth() > getSize() || areaLength() > getSize())) {
+			clearTarget(level);
+			return Status.AREA_TOO_BIG;
+		}
 		if (level.hasNeighborSignal(pos)) {
 			clearTarget(level);
 			return Status.PAUSED;
 		}
-		int key = back().ordinal() * 1000 + getSize();
+		// Default square: as before, so quarries placed earlier keep their place. Marked area: its corners.
+		int key = markedArea != null ? 0x10000 + (java.util.Arrays.hashCode(markedArea) & 0x7FFEFFFF) : back().ordinal() * 1000 + getSize();
 		if (key != areaKey) {
-			// New pit (first run, turned, or a Range Upgrade changed): start again from the top. Dug-out parts are
+			// New pit (first run, turned, a Range Upgrade changed or a new marked area): start again from the top. Dug-out parts are
 			// just air, which is skipped quickly.
 			clearTarget(level);
 			areaKey = key;
@@ -275,7 +340,7 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 	}
 
 	private void advance() {
-		if (++layerIndex >= getSize() * getSize()) {
+		if (++layerIndex >= cellsPerLayer()) {
 			layerIndex = 0;
 			layerY--;
 		}
@@ -428,6 +493,7 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 		status = Status.values()[Math.floorMod(input.getIntOr("status", 0), Status.values().length)];
 		target = input.getBooleanOr("has_target", false)
 				? new BlockPos(input.getIntOr("target_x", 0), input.getIntOr("target_y", 0), input.getIntOr("target_z", 0)) : null;
+		markedArea = input.getIntArray("marked_area").filter(a -> a.length == 4).orElse(null);
 		overflow.clear();
 		input.listOrEmpty("overflow", ItemStack.CODEC).forEach(overflow::add);
 	}
@@ -440,6 +506,7 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 		output.putInt("layer_index", layerIndex);
 		output.putInt("blocks_mined", blocksMined);
 		output.putInt("status", status.ordinal());
+		if (markedArea != null) output.putIntArray("marked_area", markedArea);
 		writeTarget(output);
 		var list = output.list("overflow", ItemStack.CODEC);
 		overflow.forEach(list::add);

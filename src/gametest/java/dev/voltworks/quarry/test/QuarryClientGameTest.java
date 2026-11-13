@@ -73,10 +73,31 @@ public class QuarryClientGameTest implements FabricClientGameTest {
 					.openMenu((MenuProvider) server.overworld().getBlockEntity(origin(server))));
 			context.waitTicks(30);
 			context.takeScreenshot("quarry-gui");
-			world.getServer().runOnServer(server -> server.getPlayerList().getPlayers().get(0)
-					.openMenu((MenuProvider) server.overworld().getBlockEntity(origin(server).offset(60, 0, 0))));
+			world.getServer().runOnServer(server -> openNear(server, origin(server).offset(60, 0, 0)));
 			context.waitTicks(30);
 			context.takeScreenshot("quarry-gui-paused");
+			// G: take its Range Upgrade out; its 13x13 marked area is now too big
+			world.getServer().runOnServer(server -> {
+				server.getPlayerList().getPlayers().get(0).closeContainer();
+				((QuarryBlockEntity) server.overworld().getBlockEntity(origin(server).offset(G_OFFSET))).setItem(QuarryBlockEntity.OUTPUT_SLOTS, ItemStack.EMPTY);
+			});
+			context.waitTicks(10);
+			failures.addAll(world.getServer().computeOnServer(server -> {
+				QuarryBlockEntity g = (QuarryBlockEntity) server.overworld().getBlockEntity(origin(server).offset(G_OFFSET));
+				return g.getStatus() == QuarryBlockEntity.Status.AREA_TOO_BIG ? List.<String>of()
+						: List.of("G: status " + g.getStatus() + " after removing the Range Upgrade, expected AREA_TOO_BIG");
+			}));
+			world.getServer().runOnServer(server -> openNear(server, origin(server).offset(G_OFFSET)));
+			context.waitTicks(30);
+			context.takeScreenshot("quarry-gui-too-big");
+			// F: the marked 5x4 pit, from above
+			world.getServer().runOnServer(server -> {
+				server.getPlayerList().getPlayers().get(0).closeContainer();
+				BlockPos f = origin(server).offset(F_OFFSET);
+				command(server, String.format("tp @a %d %d %d 0 60", f.getX() + 3, f.getY() + 6, f.getZ() - 6));
+			});
+			context.waitTicks(20);
+			context.takeScreenshot("quarry-marked-pit");
 			world.getServer().runOnServer(server -> server.getPlayerList().getPlayers().get(0).closeContainer());
 			context.waitTicks(10); // let the close reach the client, or it would close JEI's screen too
 			// JEI (present in the test run): the Quarry's info page
@@ -95,6 +116,12 @@ public class QuarryClientGameTest implements FabricClientGameTest {
 	private static BlockPos origin(MinecraftServer server) {
 		BlockPos spawn = server.getRespawnData().pos();
 		return new BlockPos(spawn.getX(), 150, spawn.getZ());
+	}
+
+	/** Stands the player next to a quarry (a GUI closes at once when out of reach) and opens it. */
+	private static void openNear(MinecraftServer server, BlockPos pos) {
+		command(server, String.format("tp @a %d %d %d 0 30", pos.getX(), pos.getY() + 1, pos.getZ() - 3));
+		server.getPlayerList().getPlayers().get(0).openMenu((MenuProvider) server.overworld().getBlockEntity(pos));
 	}
 
 	private static void command(MinecraftServer server, String cmd) {
@@ -174,7 +201,37 @@ public class QuarryClientGameTest implements FabricClientGameTest {
 		quarry(level, e, true, VoltworksQuarry.RANGE_UPGRADE, ModItems.SPEED_UPGRADE);
 		set(level, pit(e, -8, 17, 0), Blocks.STONE);
 		set(level, pit(e, 8, 17, 0), Blocks.STONE);
+
+		// F: markers set a 5x4 area to the north-east instead of the square behind (south of) the quarry.
+		// One marker touches the quarry's east side, the other is at the opposite corner, two blocks lower.
+		BlockPos f = o.offset(F_OFFSET);
+		quarry(level, f, true, ModItems.SPEED_UPGRADE, ModItems.SPEED_UPGRADE);
+		for (int x = 1; x <= 5; x++) {
+			for (int z = -3; z <= 0; z++) {
+				for (int y = 0; y >= -1; y--) set(level, f.offset(x, y, z), Blocks.STONE);
+			}
+		}
+		set(level, f.east(), VoltworksQuarry.QUARRY_MARKER);
+		set(level, f.offset(5, -2, -3), VoltworksQuarry.QUARRY_MARKER);
+		set(level, pit(f, 0, 2, 0), Blocks.STONE);       // in the default square: must stay
+		set(level, f.offset(6, 0, -1), Blocks.STONE);    // just outside the marked area: must stay
+
+		// G: a 13x13 marked area, allowed by one Range Upgrade (taken out later in the test)
+		BlockPos g = o.offset(G_OFFSET);
+		quarry(level, g, true, VoltworksQuarry.RANGE_UPGRADE);
+		set(level, g.east(), VoltworksQuarry.QUARRY_MARKER);
+		set(level, g.offset(13, 0, -12), VoltworksQuarry.QUARRY_MARKER);
+
+		// H: the partner is 13 across, more than 9 without Range Upgrades: no link, the markers stay
+		BlockPos h = o.offset(H_OFFSET);
+		quarry(level, h, true);
+		set(level, h.east(), VoltworksQuarry.QUARRY_MARKER);
+		set(level, h.offset(13, 0, -5), VoltworksQuarry.QUARRY_MARKER);
 	}
+
+	private static final net.minecraft.core.Vec3i F_OFFSET = new net.minecraft.core.Vec3i(30, 0, -40);
+	private static final net.minecraft.core.Vec3i G_OFFSET = new net.minecraft.core.Vec3i(60, 0, -40);
+	private static final net.minecraft.core.Vec3i H_OFFSET = new net.minecraft.core.Vec3i(90, 0, -40);
 
 	private static int count(ServerLevel level, BlockPos quarry, Item item) {
 		int n = 0;
@@ -249,6 +306,36 @@ public class QuarryClientGameTest implements FabricClientGameTest {
 			fails.add("E: far corners of the 17x17 pit not mined");
 		}
 		if (count(level, e, Items.COBBLESTONE) < 2) fails.add("E: cobblestone " + count(level, e, Items.COBBLESTONE));
+
+		// F: marked 5x4 area
+		BlockPos f = o.offset(F_OFFSET);
+		QuarryBlockEntity qf = (QuarryBlockEntity) level.getBlockEntity(f);
+		if (!qf.hasMarkedArea() || qf.areaWidth() != 5 || qf.areaLength() != 4) {
+			fails.add("F: area " + qf.areaWidth() + "x" + qf.areaLength() + (qf.hasMarkedArea() ? "" : " (not marked)") + ", expected a marked 5x4");
+		}
+		int leftF = 0;
+		for (int x = 1; x <= 5; x++) {
+			for (int z = -3; z <= 0; z++) {
+				for (int y = 0; y >= -2; y--) if (!level.getBlockState(f.offset(x, y, z)).isAir()) leftF++;
+			}
+		}
+		if (leftF > 0) fails.add("F: " + leftF + " blocks left in the marked area");
+		if (!level.getBlockState(pit(f, 0, 2, 0)).is(Blocks.STONE)) fails.add("F: dug the default square instead of only the marked area");
+		if (!level.getBlockState(f.offset(6, 0, -1)).is(Blocks.STONE)) fails.add("F: dug outside the marked area");
+		if (count(level, f, VoltworksQuarry.QUARRY_MARKER.asItem()) != 2) fails.add("F: markers picked up " + count(level, f, VoltworksQuarry.QUARRY_MARKER.asItem()) + ", expected 2");
+		if (!level.getBlockState(f).is(VoltworksQuarry.QUARRY)) fails.add("F: the quarry dug itself");
+
+		// G: 13x13 linked thanks to its Range Upgrade (the too-big check comes later)
+		QuarryBlockEntity qg = (QuarryBlockEntity) level.getBlockEntity(o.offset(G_OFFSET));
+		if (!qg.hasMarkedArea() || qg.areaWidth() != 13 || qg.areaLength() != 13) fails.add("G: area " + qg.areaWidth() + "x" + qg.areaLength() + ", expected a marked 13x13");
+
+		// H: partner out of range, so no link
+		BlockPos h = o.offset(H_OFFSET);
+		QuarryBlockEntity qh = (QuarryBlockEntity) level.getBlockEntity(h);
+		if (qh.hasMarkedArea()) fails.add("H: linked to a marker beyond its 9-block limit");
+		if (!level.getBlockState(h.east()).is(VoltworksQuarry.QUARRY_MARKER) || !level.getBlockState(h.offset(13, 0, -5)).is(VoltworksQuarry.QUARRY_MARKER)) {
+			fails.add("H: unpaired markers were removed");
+		}
 
 		System.out.println("[voltworks-quarry-test] A mined " + a.getBlocksMined() + ", now at Y " + a.getLayerY() + ", status " + a.getStatus());
 		return fails;

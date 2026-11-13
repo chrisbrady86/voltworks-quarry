@@ -26,6 +26,7 @@ public class QuarryJeiPlugin implements IModPlugin {
 	@Override
 	public void registerRecipes(IRecipeRegistration registration) {
 		info(registration, VoltworksQuarry.QUARRY.asItem(), "quarry", 3);
+		info(registration, VoltworksQuarry.QUARRY_MARKER.asItem(), "quarry_marker", 2);
 		info(registration, VoltworksQuarry.RANGE_UPGRADE, "range_upgrade", 1);
 		info(registration, VoltworksQuarry.FORTUNE_UPGRADE, "fortune_upgrade", 1);
 		info(registration, VoltworksQuarry.SILK_TOUCH_UPGRADE, "silk_touch_upgrade", 1);

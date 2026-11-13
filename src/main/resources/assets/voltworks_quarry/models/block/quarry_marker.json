@@ -1,0 +1,18 @@
+{ "parent": "minecraft:block/block", "ambientocclusion": false,
+  "textures": { "post": "voltworks_quarry:block/quarry_marker_post", "lamp": "voltworks_quarry:block/quarry_marker_lamp",
+                "particle": "voltworks_quarry:block/quarry_marker_lamp" },
+  "elements": [
+    { "from": [7, 0, 7], "to": [9, 9, 9], "faces": {
+      "north": { "uv": [0, 0, 2, 9], "texture": "#post" }, "south": { "uv": [0, 0, 2, 9], "texture": "#post" },
+      "east": { "uv": [0, 0, 2, 9], "texture": "#post" }, "west": { "uv": [0, 0, 2, 9], "texture": "#post" },
+      "down": { "uv": [0, 0, 2, 2], "texture": "#post", "cullface": "down" } } },
+    { "from": [6, 9, 6], "to": [10, 12, 10], "faces": {
+      "north": { "uv": [0, 0, 4, 3], "texture": "#lamp" }, "south": { "uv": [0, 0, 4, 3], "texture": "#lamp" },
+      "east": { "uv": [0, 0, 4, 3], "texture": "#lamp" }, "west": { "uv": [0, 0, 4, 3], "texture": "#lamp" },
+      "up": { "uv": [0, 0, 4, 4], "texture": "#lamp" }, "down": { "uv": [0, 0, 4, 4], "texture": "#lamp" } } } ],
+  "display": {
+    "gui": { "rotation": [30, 225, 0], "translation": [0, 1, 0], "scale": [1.1, 1.1, 1.1] },
+    "ground": { "translation": [0, 3, 0], "scale": [0.5, 0.5, 0.5] },
+    "fixed": { "scale": [0.8, 0.8, 0.8] },
+    "thirdperson_righthand": { "rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.5, 0.5, 0.5] },
+    "firstperson_righthand": { "rotation": [0, 45, 0], "translation": [0, 2, 0], "scale": [0.6, 0.6, 0.6] } } }

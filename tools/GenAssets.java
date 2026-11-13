@@ -21,6 +21,7 @@ public class GenAssets {
 	public static void main(String[] args) throws Exception {
 		res = Paths.get(args[0]);
 		quarry();
+		marker();
 		upgrades();
 		renderItems();
 		lang();
@@ -93,6 +94,52 @@ public class GenAssets {
 		LANG.put("block." + NS + ".quarry", "Quarry");
 		LANG.put("tooltip." + NS + ".quarry", "Digs out the area behind it, down to bedrock");
 		LANG.put("tooltip." + NS + ".quarry.power", "20 J/t while digging · chests on any side fill up");
+	}
+
+	// ---------------- quarry marker ----------------
+	/** A small post: a hazard-striped steel stem with a red lamp on top. */
+	static void marker() throws Exception {
+		png("block/quarry_marker_post", (x, y, r) -> ((x + y) / 2) % 2 == 0 ? rgb(230, 180, 40) : rgb(36, 36, 40));
+		png("block/quarry_marker_lamp", (x, y, r) -> {
+			boolean edge = x == 0 || y == 0 || x == 3 || y == 3;
+			return edge ? rgb(170, 30, 24) : (x == 1 && y == 1 ? rgb(255, 200, 180) : rgb(255, 70, 50));
+		});
+		write("assets/" + NS + "/models/block/quarry_marker.json", """
+			{ "parent": "minecraft:block/block", "ambientocclusion": false,
+			  "textures": { "post": "voltworks_quarry:block/quarry_marker_post", "lamp": "voltworks_quarry:block/quarry_marker_lamp",
+			                "particle": "voltworks_quarry:block/quarry_marker_lamp" },
+			  "elements": [
+			    { "from": [7, 0, 7], "to": [9, 9, 9], "faces": {
+			      "north": { "uv": [0, 0, 2, 9], "texture": "#post" }, "south": { "uv": [0, 0, 2, 9], "texture": "#post" },
+			      "east": { "uv": [0, 0, 2, 9], "texture": "#post" }, "west": { "uv": [0, 0, 2, 9], "texture": "#post" },
+			      "down": { "uv": [0, 0, 2, 2], "texture": "#post", "cullface": "down" } } },
+			    { "from": [6, 9, 6], "to": [10, 12, 10], "faces": {
+			      "north": { "uv": [0, 0, 4, 3], "texture": "#lamp" }, "south": { "uv": [0, 0, 4, 3], "texture": "#lamp" },
+			      "east": { "uv": [0, 0, 4, 3], "texture": "#lamp" }, "west": { "uv": [0, 0, 4, 3], "texture": "#lamp" },
+			      "up": { "uv": [0, 0, 4, 4], "texture": "#lamp" }, "down": { "uv": [0, 0, 4, 4], "texture": "#lamp" } } } ],
+			  "display": {
+			    "gui": { "rotation": [30, 225, 0], "translation": [0, 1, 0], "scale": [1.1, 1.1, 1.1] },
+			    "ground": { "translation": [0, 3, 0], "scale": [0.5, 0.5, 0.5] },
+			    "fixed": { "scale": [0.8, 0.8, 0.8] },
+			    "thirdperson_righthand": { "rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.5, 0.5, 0.5] },
+			    "firstperson_righthand": { "rotation": [0, 45, 0], "translation": [0, 2, 0], "scale": [0.6, 0.6, 0.6] } } }
+			""");
+		write("assets/" + NS + "/blockstates/quarry_marker.json", "{ \"variants\": { \"\": { \"model\": \"" + NS + ":block/quarry_marker\" } } }");
+		itemDef("quarry_marker", NS + ":block/quarry_marker");
+		write("data/" + NS + "/loot_table/blocks/quarry_marker.json", """
+			{ "type": "minecraft:block", "pools": [ { "rolls": 1,
+			  "condition": { "type": "minecraft:survives_explosion" },
+			  "entries": [ { "type": "minecraft:item", "name": "voltworks_quarry:quarry_marker" } ] } ],
+			  "random_sequence": "voltworks_quarry:blocks/quarry_marker" }
+			""");
+		// Two markers (one area) from a redstone torch on a tin ingot
+		shapedCount("quarry_marker", 2, new String[]{"R", "T"}, "R", "minecraft:redstone_torch", "T", "voltworks:tin_ingot");
+
+		LANG.put("block." + NS + ".quarry_marker", "Quarry Marker");
+		LANG.put("tooltip." + NS + ".quarry_marker", "Put one touching a Quarry and one at the opposite corner of the area to dig");
+		LANG.put("tooltip." + NS + ".quarry_marker.limit", "Up to 9x9, or 17 / 25 / 33 across with Range Upgrades");
+		LANG.put("message." + NS + ".marker.pair", "Pairs with the marker at %s, %s, %s: a %sx%s area");
+		LANG.put("message." + NS + ".marker.none", "No other marker within %s blocks");
 	}
 
 	// ---------------- upgrades ----------------
@@ -196,6 +243,8 @@ public class GenAssets {
 		LANG.put("gui." + NS + ".status.waiting", "Area not loaded");
 		LANG.put("gui." + NS + ".info", "Y %s · %sx%s · %s mined");
 		LANG.put("gui." + NS + ".info_done", "%sx%s · %s mined");
+		LANG.put("gui." + NS + ".status.area_too_big", "Area too big");
+		LANG.put("gui." + NS + ".info_too_big", "%sx%s marked: add Range");
 		// JEI info pages (one entry per paragraph)
 		String jei = "jei." + NS + ".info.";
 		LANG.put(jei + "quarry.1", "Digs out the 9x9 area behind it (its front faces you when placed), layer by layer, from its own height down to the bottom of the world.");
@@ -203,6 +252,8 @@ public class GenAssets {
 		LANG.put(jei + "quarry.3", "Fills any chest next to it by itself; Voltworks item pipes pull from it too. A redstone signal pauses it. Takes Range, Fortune and Silk Touch upgrades, plus the Voltworks Speed, Capacity and Ejector upgrades.");
 		LANG.put(jei + "range_upgrade.1", "Quarry upgrade: makes the pit 8 blocks wider for each one (9x9, 17x17, 25x25, up to 33x33 with three). The quarry restarts from the top; dug-out air is skipped quickly.");
 		LANG.put(jei + "fortune_upgrade.1", "Quarry upgrade: one level of Fortune for each one, up to Fortune III. Each level uses 50% more power. Silk Touch overrides it.");
+		LANG.put(jei + "quarry_marker.1", "Sets the area a Quarry digs. Put one marker touching the Quarry and another at the opposite corner; the Quarry picks both up and digs the rectangle between them, corners included, from its own height down.");
+		LANG.put(jei + "quarry_marker.2", "The area can be up to 9 blocks wide and long, or 17, 25 or 33 with one, two or three Range Upgrades. Right-click a marker to see which marker it pairs with.");
 		LANG.put(jei + "silk_touch_upgrade.1", "Quarry upgrade: mined blocks drop themselves (stone, ores, grass). Uses double power and overrides Fortune.");
 		Path guide = res.toAbsolutePath().getParent().getParent().getParent().resolve("tools/guide.txt");
 		String[] pages = Files.readString(guide).replace("\r\n", "\n").strip().split("\n---\n");
@@ -335,13 +386,17 @@ public class GenAssets {
 	}
 
 	static void shaped(String result, String[] pattern, String... keys) throws Exception {
+		shapedCount(result, 1, pattern, keys);
+	}
+
+	static void shapedCount(String result, int count, String[] pattern, String... keys) throws Exception {
 		List<String> k = new ArrayList<>();
 		for (int i = 0; i < keys.length; i += 2) k.add(q(keys[i]) + ": " + q(keys[i + 1]));
 		List<String> p = new ArrayList<>();
 		for (String row : pattern) p.add(q(row));
 		write("data/" + NS + "/recipe/" + result + ".json",
 				"{ \"type\": \"minecraft:crafting_shaped\",\n  \"pattern\": [" + String.join(", ", p) + "],\n  \"key\": { "
-						+ String.join(", ", k) + " },\n  \"result\": { \"id\": \"" + NS + ":" + result + "\", \"count\": 1 } }");
+						+ String.join(", ", k) + " },\n  \"result\": { \"id\": \"" + NS + ":" + result + "\", \"count\": " + count + " } }");
 	}
 
 	static void tag(String kind, String ns, String path, String... values) throws Exception {

@@ -29,6 +29,9 @@ public class VoltworksQuarryClient implements ClientModInitializer {
 			if (stack.is(VoltworksQuarry.QUARRY.asItem())) {
 				lines.add(Component.translatable("tooltip.voltworks_quarry.quarry").withStyle(ChatFormatting.GRAY));
 				lines.add(Component.translatable("tooltip.voltworks_quarry.quarry.power").withStyle(ChatFormatting.DARK_GRAY));
+			} else if (stack.is(VoltworksQuarry.QUARRY_MARKER.asItem())) {
+				lines.add(Component.translatable("tooltip.voltworks_quarry.quarry_marker").withStyle(ChatFormatting.GRAY));
+				lines.add(Component.translatable("tooltip.voltworks_quarry.quarry_marker.limit").withStyle(ChatFormatting.DARK_GRAY));
 			}
 		});
 		// The Voltworks Guide gains the quarry's pages at the end. Set once the game has started, so it runs after
