@@ -1,0 +1,22 @@
+{
+	"schemaVersion": 1,
+	"id": "voltworks_quarry",
+	"version": "${version}",
+	"name": "Voltworks Quarry",
+	"description": "A powered quarry for Voltworks Industrial: digs out a square pit down to bedrock, with Range, Fortune and Silk Touch upgrades.",
+	"authors": ["Voltworks Team"],
+	"license": "MIT",
+	"icon": "assets/voltworks_quarry/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": ["dev.voltworks.quarry.VoltworksQuarry"],
+		"client": ["dev.voltworks.quarry.client.VoltworksQuarryClient"]
+	},
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*",
+		"voltworks": ">=0.1.0"
+	}
+}

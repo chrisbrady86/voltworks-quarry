@@ -1,0 +1,4 @@
+{ "type": "minecraft:crafting_shaped",
+  "pattern": ["SCS", "DAD", "SPS"],
+  "key": { "S": "voltworks:steel_ingot", "C": "voltworks:circuit", "D": "minecraft:diamond_pickaxe", "A": "voltworks:advanced_machine_frame", "P": "voltworks:power_cell" },
+  "result": { "id": "voltworks_quarry:quarry", "count": 1 } }

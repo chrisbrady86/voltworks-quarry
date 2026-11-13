@@ -1,0 +1,35 @@
+Voltworks Quarry
+
+Digs a square pit behind it, layer by layer, down to bedrock.
+
+The front faces you; the pit starts at the back.
+---
+Setting Up
+
+Power it with Copper Cable: 20 J/t while digging (tier 2 power: two Generators, Thermal or a Reactor).
+
+Put a chest on any side: the quarry fills it by itself. Item pipes work too.
+---
+How It Digs
+
+9x9, from the quarry's height down. Harder blocks take longer.
+
+Bedrock is skipped. Water and lava are cleared. Chests in the way are emptied into the output.
+
+A redstone signal pauses it.
+---
+Upgrades
+
+Range: +8 wide (up to 33x33).
+Fortune: one level each, up to III, +50% power.
+Silk Touch: blocks drop themselves, double power.
+
+Speed, Capacity and Ejector upgrades work too.
+---
+Tips
+
+The GUI shows the layer, size and blocks mined.
+
+Turning the quarry or adding a Range upgrade restarts from the top; dug-out air is skipped fast.
+
+Keep the area's chunks loaded.
