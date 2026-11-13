@@ -100,7 +100,10 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 				case 10 -> areaLength();
 				case 8 -> blocksMined & 0x7FFF;
 				case 9 -> blocksMined >>> 15;
-				default -> data.get(id);
+				case 11 -> status == Status.FINISHED ? cellsPerLayer() : layerIndex;
+				case 12 -> worldPosition.getY();
+				case 13 -> level != null ? level.getMinY() : worldPosition.getY();
+				default -> id < DATA_COUNT ? data.get(id) : 0;
 			};
 		}
 
@@ -447,6 +450,19 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 		return layerY;
 	}
 
+	/** Client side: the area's corners as the server last sent them (for the gantry), or null before the first update. */
+	private int @Nullable [] syncedBounds;
+
+	public int @Nullable [] getSyncedBounds() {
+		return syncedBounds;
+	}
+
+	/**
+	 * Client side, renderer only: where the gantry's drill head is drawn (relative to the quarry; x/z centre, y tip).
+	 * It glides towards the block being dug instead of jumping. NaN until first drawn.
+	 */
+	public double gantryX = Double.NaN, gantryY, gantryZ, gantryTime;
+
 	// ---------------- machine plumbing ----------------
 
 	@Override
@@ -494,6 +510,7 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 		target = input.getBooleanOr("has_target", false)
 				? new BlockPos(input.getIntOr("target_x", 0), input.getIntOr("target_y", 0), input.getIntOr("target_z", 0)) : null;
 		markedArea = input.getIntArray("marked_area").filter(a -> a.length == 4).orElse(null);
+		syncedBounds = input.getIntArray("bounds").filter(a -> a.length == 4).orElse(null);
 		overflow.clear();
 		input.listOrEmpty("overflow", ItemStack.CODEC).forEach(overflow::add);
 	}
@@ -526,12 +543,13 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 		return ClientboundBlockEntityDataPacket.create(this);
 	}
 
-	/** The client only needs what the renderer draws: the block being dug and the status. */
+	/** The client only needs what the renderer draws: the block being dug, the status and the area the gantry spans. */
 	@Override
 	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
 		CompoundTag tag = new CompoundTag();
 		tag.putInt("status", status.ordinal());
 		tag.putInt("area_key", areaKey);
+		tag.putIntArray("bounds", areaBounds());
 		tag.putBoolean("has_target", target != null);
 		if (target != null) {
 			tag.putInt("target_x", target.getX());

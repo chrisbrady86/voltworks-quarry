@@ -15,10 +15,11 @@ import net.minecraft.world.item.ItemStack;
 
 /** Quarry GUI: energy bar, 3x6 output, three upgrade slots and a status line. */
 public class QuarryMenu extends AbstractContainerMenu {
-	/** energy, capacity, progress, progressTotal, (unused), status, layer Y, width, mined low, mined high, length */
-	public static final int DATA_COUNT = 11;
+	/** energy, capacity, progress, progressTotal, (unused), status, layer Y, width, mined low, mined high, length,
+	 *  cells done in this layer, start Y (the quarry's own), bottom of the world */
+	public static final int DATA_COUNT = 14;
 	public static final int OUTPUT_X = 36, OUTPUT_Y = 17, UPGRADE_X = 152;
-	public static final int INVENTORY_Y = 102;
+	public static final int INVENTORY_Y = 142;
 	private static final int MACHINE_SLOTS = QuarryBlockEntity.OUTPUT_SLOTS + PoweredContainerBlockEntity.UPGRADE_SLOTS;
 
 	private final Container container;
@@ -77,6 +78,20 @@ public class QuarryMenu extends AbstractContainerMenu {
 
 	public int getLength() {
 		return data.get(10);
+	}
+
+	/** Cells of the current layer already done (row by row, starting next to the quarry). */
+	public int getLayerIndex() {
+		return data.get(11);
+	}
+
+	/** The quarry's own height (where digging starts) and the bottom of the world. */
+	public int getStartY() {
+		return (short) data.get(12);
+	}
+
+	public int getBottomY() {
+		return (short) data.get(13);
 	}
 
 	public int getBlocksMined() {

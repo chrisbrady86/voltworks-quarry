@@ -12,7 +12,8 @@ An expansion for [Voltworks Industrial](https://github.com/chrisbrady86/voltwork
   - Bedrock and other unbreakable blocks are skipped. Water and lava are cleared. Chests in the way are emptied into the output; nothing spills into the pit.
   - 18 output slots. It pushes items into any adjacent chest by itself, and Voltworks item pipes pull from it like any other machine. If everything is full, it waits.
   - A redstone signal pauses it.
-  - While it digs, a spinning drill head hangs from a red laser over the block it's mining, with breaking cracks.
+  - While it digs, a steel gantry frames the pit: a bridge and carriage follow the row being dug, and a shaft lowers a spinning drill head onto the block it's mining, with breaking cracks.
+  - Its screen shows a map of the current layer (dug, still to dig, the drill) and a depth gauge down to the bottom of the world.
   - Works with the Voltworks wrench: rotate it, configure sides, sneak + right-click to pick it up.
 - **Quarry Marker**: to dig somewhere other than the square behind the quarry, put one marker touching the quarry and another at the opposite corner. The quarry picks both up and digs the rectangle between them (corners included), from its own height down. The area can be up to 9 wide and long, or 17 / 25 / 33 with Range Upgrades; if Range Upgrades are taken out later, it stops with "Area too big". Right-click a marker to see which marker it pairs with. Keep cables and chests outside the marked area.
 - **Upgrades** (three slots, shared with Voltworks' Speed / Capacity / Ejector upgrades):
@@ -31,7 +32,7 @@ Turning the quarry or changing its range restarts it from the top; air it alread
 
 ## Building and running
 
-Needs JDK 25 (path in `gradle.properties`) and a built Voltworks jar. The addon compiles against `../voltworks/build/libs/voltworks-0.1.0.jar` (set by `voltworks_jar` in `gradle.properties`), so build Voltworks first:
+Needs JDK 25 (path in `gradle.properties`) and a built Voltworks jar. The addon compiles against `../voltworks/build/libs/voltworks-0.2.0.jar` (set by `voltworks_jar` in `gradle.properties`), so build Voltworks first:
 
 ```bash
 cd ../voltworks && ./gradlew build
@@ -39,7 +40,7 @@ cd ../voltworks-quarry && ./gradlew build
 ./gradlew runClientGameTest   # automated in-world test, expect "ALL CHECKS PASSED"
 ```
 
-To play: put `voltworks-quarry-<version>.jar`, Voltworks Industrial 0.1.x and Fabric API in your `mods` folder. Voltworks Quarry 0.1.x works with Voltworks Industrial 0.1.x; with any other version (or without it) the game stops at startup with a message saying which version is needed. JEI is optional.
+To play: put `voltworks-quarry-<version>.jar`, Voltworks Industrial 0.2.x and Fabric API in your `mods` folder. Voltworks Quarry 0.1.x works with Voltworks Industrial 0.2.x; with any other version (or without it) the game stops at startup with a message saying which version is needed. JEI is optional.
 
 ## Automated test
 

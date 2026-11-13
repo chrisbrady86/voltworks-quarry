@@ -97,26 +97,29 @@ public class GenAssets {
 	}
 
 	// ---------------- quarry marker ----------------
-	/** A small post: a hazard-striped steel stem with a red lamp on top. */
+	/** A survey post in tier 2 colours: slate base plate, slate stem with gold bands, a glowing red lamp under a slate cap. */
 	static void marker() throws Exception {
-		png("block/quarry_marker_post", (x, y, r) -> ((x + y) / 2) % 2 == 0 ? rgb(230, 180, 40) : rgb(36, 36, 40));
+		png("block/quarry_marker_post", (x, y, r) -> {
+			if (y == 1 || y == 5) return x % 2 == 0 ? rgb(240, 180, 60) : rgb(200, 140, 40);
+			return x % 2 == 0 ? shade(ADV, 22) : shade(ADV, -22);
+		});
+		png("block/quarry_marker_base", (x, y, r) -> casing(x, y, r, ADV, rgb(240, 170, 50)));
 		png("block/quarry_marker_lamp", (x, y, r) -> {
-			boolean edge = x == 0 || y == 0 || x == 3 || y == 3;
-			return edge ? rgb(170, 30, 24) : (x == 1 && y == 1 ? rgb(255, 200, 180) : rgb(255, 70, 50));
+			boolean edge = x == 0 || y == 0 || x == 15 || y == 15;
+			if (edge) return rgb(150, 26, 20);
+			return x < 6 && y < 6 ? rgb(255, 205, 185) : ((x + y) % 5 == 0 ? rgb(255, 120, 90) : rgb(250, 64, 44));
 		});
 		write("assets/" + NS + "/models/block/quarry_marker.json", """
 			{ "parent": "minecraft:block/block", "ambientocclusion": false,
 			  "textures": { "post": "voltworks_quarry:block/quarry_marker_post", "lamp": "voltworks_quarry:block/quarry_marker_lamp",
-			                "particle": "voltworks_quarry:block/quarry_marker_lamp" },
+			                "base": "voltworks_quarry:block/quarry_marker_base", "particle": "voltworks_quarry:block/quarry_marker_lamp" },
 			  "elements": [
-			    { "from": [7, 0, 7], "to": [9, 9, 9], "faces": {
-			      "north": { "uv": [0, 0, 2, 9], "texture": "#post" }, "south": { "uv": [0, 0, 2, 9], "texture": "#post" },
-			      "east": { "uv": [0, 0, 2, 9], "texture": "#post" }, "west": { "uv": [0, 0, 2, 9], "texture": "#post" },
-			      "down": { "uv": [0, 0, 2, 2], "texture": "#post", "cullface": "down" } } },
-			    { "from": [6, 9, 6], "to": [10, 12, 10], "faces": {
-			      "north": { "uv": [0, 0, 4, 3], "texture": "#lamp" }, "south": { "uv": [0, 0, 4, 3], "texture": "#lamp" },
-			      "east": { "uv": [0, 0, 4, 3], "texture": "#lamp" }, "west": { "uv": [0, 0, 4, 3], "texture": "#lamp" },
-			      "up": { "uv": [0, 0, 4, 4], "texture": "#lamp" }, "down": { "uv": [0, 0, 4, 4], "texture": "#lamp" } } } ],
+			""" + String.join(",\n", List.of(
+				box(5, 0, 5, 11, 1, 11, "#base", all(0, 7, 6, 8), all(5, 5, 11, 11)),
+				box(7, 1, 7, 9, 9, 9, "#post", all(0, 0, 2, 8), all(0, 0, 2, 2)),
+				lit(box(6, 9, 6, 10, 12, 10, "#lamp", all(0, 4, 16, 16), all(0, 0, 16, 16))),
+				box(5.5, 12, 5.5, 10.5, 13, 10.5, "#base", all(0, 0, 5, 1), all(5, 5, 10, 10)))) + """
+			  ],
 			  "display": {
 			    "gui": { "rotation": [30, 225, 0], "translation": [0, 1, 0], "scale": [1.1, 1.1, 1.1] },
 			    "ground": { "translation": [0, 3, 0], "scale": [0.5, 0.5, 0.5] },
@@ -155,39 +158,57 @@ public class GenAssets {
 		};
 	}
 
-	static void upgrades() throws Exception {
-		// Range: four cyan arrows pointing outwards from a square
-		png("item/range_upgrade", upgradeCard((x, y, r) -> {
-			int c = rgb(80, 220, 240);
-			if (inRect(x, y, 6, 6, 9, 9) && (x == 6 || x == 9 || y == 6 || y == 9)) return rgb(200, 200, 205);
-			if ((x == 7 || x == 8) && (y == 3 || y == 12)) return c;
-			if ((y == 7 || y == 8) && (x == 3 || x == 12)) return c;
-			if ((y == 4 || y == 11) && x >= 6 && x <= 9) return c;
-			if ((x == 4 || x == 11) && y >= 6 && y <= 9) return c;
-			return 0;
-		}));
-		// Fortune: a blue gem with a light facet
-		png("item/fortune_upgrade", upgradeCard((x, y, r) -> {
-			int dy = y - 3;
-			if (y >= 3 && y <= 11) {
-				int half = y <= 5 ? 1 + dy : Math.max(0, 11 - y);
-				if (Math.abs(x - 7.5) <= half + 0.5) {
-					if (y == 3 || Math.abs(x - 7.5) > half - 0.5) return rgb(20, 40, 120);
-					return (x < 8 && y < 7) ? rgb(130, 170, 255) : rgb(50, 90, 220);
-				}
+	/** Icons get a dark outline, as on the Voltworks Speed / Capacity / Ejector cards, so they read on the board. */
+	static Painter outlined(Painter icon) {
+		return (x, y, r) -> {
+			int c = icon.at(x, y, r);
+			if (c != 0) return c;
+			if (x < 3 || x > 12 || y < 2 || y > 12) return 0;
+			for (int[] d : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+				if (icon.at(x + d[0], y + d[1], r) != 0) return rgb(14, 22, 20);
 			}
 			return 0;
-		}));
-		// Silk Touch: a white feather curving across the card
-		png("item/silk_touch_upgrade", upgradeCard((x, y, r) -> {
+		};
+	}
+
+	static void upgrades() throws Exception {
+		// Range: four cyan arrows pointing outwards from a gold centre
+		png("item/range_upgrade", upgradeCard(outlined((x, y, r) -> {
+			int c = rgb(90, 226, 246), hi = rgb(210, 250, 255);
+			if ((x == 7 || x == 8) && (y == 7 || y == 8)) return rgb(240, 180, 60);
+			boolean midX = x == 7 || x == 8, midY = y == 7 || y == 8;
+			if (midX && (y == 3 || y == 12)) return hi;                              // tips
+			if (midY && (x == 3 || x == 12)) return hi;
+			if ((y == 4 || y == 11) && x >= 6 && x <= 9) return c;                   // heads
+			if ((x == 4 || x == 11) && y >= 6 && y <= 9) return c;
+			if (midX && (y == 5 || y == 10)) return c;                               // shafts
+			if (midY && (x == 5 || x == 10)) return c;
+			return 0;
+		})));
+		// Fortune: a cut lapis gem with facets and a sparkle
+		png("item/fortune_upgrade", upgradeCard(outlined((x, y, r) -> {
+			if (x == 11 && y == 3) return rgb(255, 255, 255);
+			if ((x == 11 && (y == 2 || y == 4)) || (y == 3 && (x == 10 || x == 12))) return rgb(170, 200, 255);
+			if (y < 4 || y > 11) return 0;
+			int half = y == 4 ? 2 : y == 5 ? 3 : y == 6 ? 4 : 11 - y;
+			double dx = x - 7.5;
+			if (Math.abs(dx) > half) return 0;
+			if (y == 4) return rgb(150, 190, 255);                                   // table
+			if (y == 5 || y == 6) return dx < 0 ? rgb(110, 150, 250) : rgb(60, 100, 230);   // crown
+			if (Math.abs(dx) < 1) return rgb(70, 110, 236);                          // pavilion facets
+			return dx < 0 ? rgb(46, 80, 200) : rgb(28, 52, 150);
+		})));
+		// Silk Touch: a white feather with a quill, curving across the card
+		png("item/silk_touch_upgrade", upgradeCard(outlined((x, y, r) -> {
 			double t = (x - 3) / 9.0;
 			if (t < 0 || t > 1) return 0;
-			double spine = 11 - 7 * t;
-			if (Math.abs(y - spine) < 0.6) return rgb(170, 170, 180);
-			if (t > 0.2 && y < spine && spine - y < 2.6 - 1.5 * Math.abs(t - 0.6)) return rgb(245, 245, 250);
-			if (t > 0.2 && y > spine && y - spine < 1.6) return rgb(220, 220, 230);
+			double spine = 12 - 8.5 * t;
+			if (Math.abs(y - spine) < 0.55) return t < 0.25 ? rgb(200, 160, 90) : rgb(150, 150, 166);
+			double w = t < 0.25 ? 0 : 2.8 - 2.6 * Math.abs(t - 0.62);
+			if (y < spine && spine - y < w) return (x + y) % 3 == 0 ? rgb(214, 218, 232) : rgb(250, 250, 255);
+			if (y > spine && y - spine < w * 0.6) return rgb(206, 210, 224);
 			return 0;
-		}));
+		})));
 		for (String item : List.of("range_upgrade", "fortune_upgrade", "silk_touch_upgrade")) generatedItem(item);
 		shaped("range_upgrade", new String[]{"TCT", "RXR"}, "T", "voltworks:tin_ingot", "R", "minecraft:redstone",
 				"C", "voltworks:circuit", "X", "minecraft:ender_pearl");
@@ -205,32 +226,161 @@ public class GenAssets {
 		LANG.put("tooltip." + NS + ".upgrade.hint", "Goes in a Quarry's upgrade slots");
 	}
 
-	// ---------------- items only used by the renderer ----------------
+	// ---------------- the gantry: items only used by the renderer ----------------
+	/**
+	 * While it digs, the quarry draws a steel gantry over its pit: a frame round the edge on corner posts, a bridge
+	 * that runs along the rows, a carriage on the bridge and a shaft down to a spinning drill head. Every part is
+	 * a small 3D model (an item that is never obtainable), drawn in Voltworks' tier 2 slate with gold trim.
+	 */
 	static void renderItems() throws Exception {
-		// Drill head: a steel cone pointing down, with a gold collar and spiral grooves
-		png("item/drill_head", (x, y, r) -> {
-			if (y >= 1 && y <= 3 && x >= 5 && x <= 10) return y == 1 ? rgb(90, 94, 102) : rgb(60, 64, 72);  // hub
-			if (y == 4 && x >= 3 && x <= 12) return x % 2 == 0 ? rgb(240, 190, 60) : rgb(200, 150, 40);  // collar
-			if (y >= 5 && y <= 15) {
-				double half = 4.5 * (15 - y) / 10.0;
-				if (Math.abs(x - 7.5) <= half + 0.5) {
-					if ((x + y) % 4 == 0) return rgb(96, 100, 110);
-					return x < 8 ? rgb(214, 220, 228) : rgb(160, 166, 176);
-				}
+		// Beam: a 4x4 steel girder one block long. Rows 0-3 are its side (slate, light top edge, dark bottom edge,
+		// a lighter channel along the middle and a gold rivet at each end so joints between segments show);
+		// x 0-3 of rows 4-7 is its end.
+		png("block/gantry_beam", (x, y, r) -> {
+			if (y < 4) {
+				if (y == 0) return shade(ADV, 34);
+				if (y == 3) return shade(ADV, -40);
+				if ((x == 1 || x == 14) && y == 1) return rgb(240, 170, 50);
+				return y == 1 ? shade(ADV, 10 + r.nextInt(5)) : shade(ADV, -6 + r.nextInt(5));
+			}
+			if (y < 8 && x < 4) {
+				boolean edge = x == 0 || x == 3 || y == 4 || y == 7;
+				return edge ? shade(ADV, -30) : shade(ADV, 6);
 			}
 			return 0;
 		});
-		// Laser: a bright red core with a soft glow either side
+		write("assets/" + NS + "/models/item/gantry_beam.json", model("gantry_beam", "#beam", "voltworks_quarry:block/gantry_beam",
+				box(6, 6, 0, 10, 10, 16, "#beam", side(0, 0, 16, 4, true), side(0, 4, 4, 8, false))));
+		itemDef("gantry_beam", NS + ":item/gantry_beam");
+
+		// Joint: a 6x6 block of hazard paint where beams meet and on top of the corner posts
+		png("block/gantry_joint", (x, y, r) -> {
+			if (x == 0 || y == 0 || x == 15 || y == 15) return rgb(28, 28, 32);
+			return ((x + y) / 3) % 2 == 0 ? rgb(232, 180, 40) : rgb(36, 36, 40);
+		});
+		write("assets/" + NS + "/models/item/gantry_joint.json", model("gantry_joint", "#joint", "voltworks_quarry:block/gantry_joint",
+				box(5, 5, 5, 11, 11, 11, "#joint", all(0, 0, 16, 16), all(0, 0, 16, 16))));
+		itemDef("gantry_joint", NS + ":item/gantry_joint");
+
+		// Carriage: a slate box riding the bridge, gold rivets, a hazard band, a red lamp on top, and a sleeve hanging under
+		// it that the drill shaft slides out of. Texture: casing (whole 16x16) for the body, rows of the sleeve on top.
+		png("block/gantry_carriage", (x, y, r) -> {
+			if (y == 13 && x > 0 && x < 15) return ((x / 2) % 2 == 0) ? rgb(230, 180, 40) : rgb(30, 30, 30);
+			return casing(x, y, r, ADV, rgb(240, 170, 50));
+		});
+		png("block/gantry_sleeve", (x, y, r) -> {
+			if (y == 0 || y == 15) return rgb(240, 170, 50);
+			return x % 4 == 0 ? shade(ADV, -36) : shade(ADV, x % 4 == 1 ? 18 : -4);
+		});
+		png("block/gantry_lamp", (x, y, r) -> x == 0 || y == 0 || x == 15 || y == 15 ? rgb(170, 30, 24)
+				: (x < 6 && y < 6 ? rgb(255, 190, 170) : rgb(255, 70, 50)));
+		write("assets/" + NS + "/models/item/gantry_carriage.json", """
+			{ "textures": { "body": "voltworks_quarry:block/gantry_carriage", "sleeve": "voltworks_quarry:block/gantry_sleeve",
+			                "lamp": "voltworks_quarry:block/gantry_lamp", "particle": "voltworks_quarry:block/gantry_carriage" },
+			  "elements": [
+			""" + String.join(",\n", List.of(
+				box(2, 4, 3, 14, 12, 13, "#body", all(0, 2, 16, 14), all(0, 0, 16, 16)),
+				box(6, -6, 6, 10, 4, 10, "#sleeve", all(0, 0, 4, 16), all(0, 0, 4, 4)),
+				lit(box(6.5, 12, 6.5, 9.5, 13.5, 9.5, "#lamp", all(0, 0, 16, 16), all(0, 0, 16, 16))))) + """
+			  ] }
+			""");
+		itemDef("gantry_carriage", NS + ":item/gantry_carriage");
+
+		// Shaft: a polished steel rod, stretched to any length (the texture is the same all the way down)
+		png("block/drill_shaft", (x, y, r) -> switch (x % 4) {
+			case 0 -> rgb(110, 116, 126);
+			case 1 -> rgb(222, 228, 236);
+			case 2 -> rgb(176, 182, 192);
+			default -> rgb(140, 146, 156);
+		});
+		write("assets/" + NS + "/models/item/drill_shaft.json", model("drill_shaft", "#rod", "voltworks_quarry:block/drill_shaft",
+				box(6.5, 0, 6.5, 9.5, 16, 9.5, "#rod", all(0, 0, 3, 16), all(0, 0, 3, 3))));
+		itemDef("drill_shaft", NS + ":item/drill_shaft");
+
+		// Drill head: a slate motor housing with gold rivets and a gold collar over a stepped steel bit with spiral
+		// grooves. The tip is at the model's bottom (y 0), so the renderer can put it on the block being dug.
+		png("block/drill_housing", (x, y, r) -> casing(x, y, r, ADV, rgb(240, 170, 50)));
+		png("block/drill_collar", (x, y, r) -> x % 2 == 0 ? rgb(240, 190, 60) : rgb(196, 146, 40));
+		png("block/drill_bit", (x, y, r) -> {
+			int groove = Math.floorMod(x - y, 4);
+			if (groove == 0) return rgb(84, 88, 98);
+			return groove == 1 ? rgb(226, 232, 240) : rgb(168, 174, 184);
+		});
+		write("assets/" + NS + "/models/item/drill_head.json", """
+			{ "textures": { "housing": "voltworks_quarry:block/drill_housing", "collar": "voltworks_quarry:block/drill_collar",
+			                "bit": "voltworks_quarry:block/drill_bit", "particle": "voltworks_quarry:block/drill_housing" },
+			  "elements": [
+			""" + String.join(",\n", List.of(
+				box(4, 9, 4, 12, 15, 12, "#housing", all(0, 4, 16, 16), all(0, 0, 16, 16)),
+				box(3.5, 8, 3.5, 12.5, 9, 12.5, "#collar", all(0, 0, 9, 1), all(0, 0, 9, 9)),
+				box(5, 6, 5, 11, 8, 11, "#bit", all(0, 0, 6, 2), all(0, 0, 6, 6)),
+				box(5.75, 4, 5.75, 10.25, 6, 10.25, "#bit", all(2, 2, 6.5, 4), all(0, 0, 4.5, 4.5)),
+				box(6.5, 2, 6.5, 9.5, 4, 9.5, "#bit", all(4, 4, 7, 6), all(0, 0, 3, 3)),
+				box(7.25, 0, 7.25, 8.75, 2, 8.75, "#bit", all(6, 6, 7.5, 8), all(0, 0, 1.5, 1.5)))) + """
+			  ] }
+			""");
+		itemDef("drill_head", NS + ":item/drill_head");
+
+		// Laser: no longer drawn (the gantry replaced it); kept so the item id stays registered
 		png("item/laser", (x, y, r) -> {
 			if (x == 7 || x == 8) return rgb(255, 210, 200);
 			if (x == 6 || x == 9) return argb(200, 255, 50, 40);
 			if (x == 5 || x == 10) return argb(70, 255, 40, 30);
 			return 0;
 		});
-		generatedItem("drill_head");
 		generatedItem("laser");
 		LANG.put("item." + NS + ".drill_head", "Quarry Drill Head");
 		LANG.put("item." + NS + ".laser", "Quarry Laser");
+		LANG.put("item." + NS + ".gantry_beam", "Quarry Gantry Beam");
+		LANG.put("item." + NS + ".gantry_joint", "Quarry Gantry Joint");
+		LANG.put("item." + NS + ".gantry_carriage", "Quarry Gantry Carriage");
+		LANG.put("item." + NS + ".drill_shaft", "Quarry Drill Shaft");
+	}
+
+	// ---------------- model helpers ----------------
+	/** A one-element model; no display transforms, so the renderer places it 1:1 (centred on the block). */
+	static String model(String name, String key, String texture, String element) {
+		return "{ \"textures\": { " + q(key.substring(1)) + ": " + q(texture) + ", \"particle\": " + q(texture) + " },\n  \"elements\": [\n" + element + "\n  ] }\n";
+	}
+
+	/** UVs for the four sides and the two ends of a box. */
+	record Faces(String sides, String ends) {}
+
+	static String uv(double u0, double v0, double u1, double v1) {
+		return "[" + n(u0) + ", " + n(v0) + ", " + n(u1) + ", " + n(v1) + "]";
+	}
+
+	static String n(double d) {
+		return d == Math.rint(d) ? String.valueOf((int) d) : String.valueOf(d);
+	}
+
+	/** Side UV; {@code alongZ} turns the up/down faces so a beam lying along Z gets its strip lengthways. */
+	static String[] side(double u0, double v0, double u1, double v1, boolean alongZ) {
+		return new String[]{uv(u0, v0, u1, v1), alongZ ? "90" : "0"};
+	}
+
+	static String[] all(double u0, double v0, double u1, double v1) {
+		return new String[]{uv(u0, v0, u1, v1), "0"};
+	}
+
+	/**
+	 * One box. {@code sides} is used for north/south/east/west (and, for a beam along Z, for up/down turned 90°);
+	 * {@code ends} for up/down — or, for a beam along Z (sides rotated), for north/south.
+	 */
+	static String box(double x0, double y0, double z0, double x1, double y1, double z1, String tex, String[] sides, String[] ends) {
+		boolean beamZ = sides[1].equals("90");
+		String s = "\"uv\": " + sides[0] + ", \"texture\": " + q(tex);
+		String e = "\"uv\": " + ends[0] + ", \"texture\": " + q(tex);
+		String sr = s + ", \"rotation\": 90";
+		String faces = beamZ
+				? "\"north\": { " + e + " }, \"south\": { " + e + " }, \"east\": { " + s + " }, \"west\": { " + s + " }, \"up\": { " + sr + " }, \"down\": { " + sr + " }"
+				: "\"north\": { " + s + " }, \"south\": { " + s + " }, \"east\": { " + s + " }, \"west\": { " + s + " }, \"up\": { " + e + " }, \"down\": { " + e + " }";
+		return "    { \"from\": [" + n(x0) + ", " + n(y0) + ", " + n(z0) + "], \"to\": [" + n(x1) + ", " + n(y1) + ", " + n(z1) + "], \"faces\": { " + faces + " } }";
+	}
+
+	/** Makes an element glow (full brightness whatever the light around it). */
+	static String lit(String element) {
+		return element.replaceFirst("\\{ \"from\"", "{ \"light_emission\": 15, \"from\"");
 	}
 
 	// ---------------- translations ----------------
@@ -241,10 +391,15 @@ public class GenAssets {
 		LANG.put("gui." + NS + ".status.paused", "Paused (redstone)");
 		LANG.put("gui." + NS + ".status.finished", "Finished");
 		LANG.put("gui." + NS + ".status.waiting", "Area not loaded");
-		LANG.put("gui." + NS + ".info", "Y %s · %sx%s · %s mined");
-		LANG.put("gui." + NS + ".info_done", "%sx%s · %s mined");
 		LANG.put("gui." + NS + ".status.area_too_big", "Area too big");
-		LANG.put("gui." + NS + ".info_too_big", "%sx%s marked: add Range");
+		// The display under the output (each line has to fit in about 90 pixels)
+		LANG.put("gui." + NS + ".screen.layer", "Layer Y %s");
+		LANG.put("gui." + NS + ".screen.area", "Area %s×%s");
+		LANG.put("gui." + NS + ".screen.row", "Row %s of %s");
+		LANG.put("gui." + NS + ".screen.mined", "%s mined");
+		LANG.put("gui." + NS + ".screen.needs_range", "Add Range");
+		LANG.put("gui." + NS + ".screen.bottom", "Reached bottom");
+		LANG.put("gui." + NS + ".screen.depth", "Started at Y %s · now Y %s · bottom Y %s");
 		// JEI info pages (one entry per paragraph)
 		String jei = "jei." + NS + ".info.";
 		LANG.put(jei + "quarry.1", "Digs out the 9x9 area behind it (its front faces you when placed), layer by layer, from its own height down to the bottom of the world.");

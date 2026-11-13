@@ -26,6 +26,6 @@
 		"minecraft": "~26.3",
 		"java": ">=25",
 		"fabric-api": "*",
-		"voltworks": ">=0.1.0 <0.2.0"
+		"voltworks": ">=0.2.0 <0.3.0"
 	}
 }

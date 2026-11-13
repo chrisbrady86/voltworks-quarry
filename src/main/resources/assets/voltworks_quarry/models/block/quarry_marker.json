@@ -1,15 +1,11 @@
 { "parent": "minecraft:block/block", "ambientocclusion": false,
   "textures": { "post": "voltworks_quarry:block/quarry_marker_post", "lamp": "voltworks_quarry:block/quarry_marker_lamp",
-                "particle": "voltworks_quarry:block/quarry_marker_lamp" },
+                "base": "voltworks_quarry:block/quarry_marker_base", "particle": "voltworks_quarry:block/quarry_marker_lamp" },
   "elements": [
-    { "from": [7, 0, 7], "to": [9, 9, 9], "faces": {
-      "north": { "uv": [0, 0, 2, 9], "texture": "#post" }, "south": { "uv": [0, 0, 2, 9], "texture": "#post" },
-      "east": { "uv": [0, 0, 2, 9], "texture": "#post" }, "west": { "uv": [0, 0, 2, 9], "texture": "#post" },
-      "down": { "uv": [0, 0, 2, 2], "texture": "#post", "cullface": "down" } } },
-    { "from": [6, 9, 6], "to": [10, 12, 10], "faces": {
-      "north": { "uv": [0, 0, 4, 3], "texture": "#lamp" }, "south": { "uv": [0, 0, 4, 3], "texture": "#lamp" },
-      "east": { "uv": [0, 0, 4, 3], "texture": "#lamp" }, "west": { "uv": [0, 0, 4, 3], "texture": "#lamp" },
-      "up": { "uv": [0, 0, 4, 4], "texture": "#lamp" }, "down": { "uv": [0, 0, 4, 4], "texture": "#lamp" } } } ],
+    { "from": [5, 0, 5], "to": [11, 1, 11], "faces": { "north": { "uv": [0, 7, 6, 8], "texture": "#base" }, "south": { "uv": [0, 7, 6, 8], "texture": "#base" }, "east": { "uv": [0, 7, 6, 8], "texture": "#base" }, "west": { "uv": [0, 7, 6, 8], "texture": "#base" }, "up": { "uv": [5, 5, 11, 11], "texture": "#base" }, "down": { "uv": [5, 5, 11, 11], "texture": "#base" } } },
+    { "from": [7, 1, 7], "to": [9, 9, 9], "faces": { "north": { "uv": [0, 0, 2, 8], "texture": "#post" }, "south": { "uv": [0, 0, 2, 8], "texture": "#post" }, "east": { "uv": [0, 0, 2, 8], "texture": "#post" }, "west": { "uv": [0, 0, 2, 8], "texture": "#post" }, "up": { "uv": [0, 0, 2, 2], "texture": "#post" }, "down": { "uv": [0, 0, 2, 2], "texture": "#post" } } },
+    { "light_emission": 15, "from": [6, 9, 6], "to": [10, 12, 10], "faces": { "north": { "uv": [0, 4, 16, 16], "texture": "#lamp" }, "south": { "uv": [0, 4, 16, 16], "texture": "#lamp" }, "east": { "uv": [0, 4, 16, 16], "texture": "#lamp" }, "west": { "uv": [0, 4, 16, 16], "texture": "#lamp" }, "up": { "uv": [0, 0, 16, 16], "texture": "#lamp" }, "down": { "uv": [0, 0, 16, 16], "texture": "#lamp" } } },
+    { "from": [5.5, 12, 5.5], "to": [10.5, 13, 10.5], "faces": { "north": { "uv": [0, 0, 5, 1], "texture": "#base" }, "south": { "uv": [0, 0, 5, 1], "texture": "#base" }, "east": { "uv": [0, 0, 5, 1], "texture": "#base" }, "west": { "uv": [0, 0, 5, 1], "texture": "#base" }, "up": { "uv": [5, 5, 10, 10], "texture": "#base" }, "down": { "uv": [5, 5, 10, 10], "texture": "#base" } } }  ],
   "display": {
     "gui": { "rotation": [30, 225, 0], "translation": [0, 1, 0], "scale": [1.1, 1.1, 1.1] },
     "ground": { "translation": [0, 3, 0], "scale": [0.5, 0.5, 0.5] },

@@ -42,9 +42,9 @@ public class QuarryJeiPlugin implements IModPlugin {
 
 	@Override
 	public void onRuntimeAvailable(IJeiRuntime runtime) {
-		// The drill head and laser only exist to be drawn in the world
+		// The gantry parts only exist to be drawn in the world
 		runtime.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK,
-				java.util.List.of(VoltworksQuarry.DRILL_HEAD.getDefaultInstance(), VoltworksQuarry.LASER.getDefaultInstance()));
+				VoltworksQuarry.RENDER_ONLY.stream().map(Item::getDefaultInstance).toList());
 		VoltworksQuarryClient.showRecipes = stack -> runtime.getRecipesGui().show(
 				runtime.getJeiHelpers().getFocusFactory().createFocus(RecipeIngredientRole.OUTPUT, VanillaTypes.ITEM_STACK, stack));
 	}

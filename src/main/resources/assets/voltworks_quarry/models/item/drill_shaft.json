@@ -1,0 +1,4 @@
+{ "textures": { "rod": "voltworks_quarry:block/drill_shaft", "particle": "voltworks_quarry:block/drill_shaft" },
+  "elements": [
+    { "from": [6.5, 0, 6.5], "to": [9.5, 16, 9.5], "faces": { "north": { "uv": [0, 0, 3, 16], "texture": "#rod" }, "south": { "uv": [0, 0, 3, 16], "texture": "#rod" }, "east": { "uv": [0, 0, 3, 16], "texture": "#rod" }, "west": { "uv": [0, 0, 3, 16], "texture": "#rod" }, "up": { "uv": [0, 0, 3, 3], "texture": "#rod" }, "down": { "uv": [0, 0, 3, 3], "texture": "#rod" } } }
+  ] }

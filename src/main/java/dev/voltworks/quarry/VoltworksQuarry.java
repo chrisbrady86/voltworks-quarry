@@ -47,9 +47,15 @@ public class VoltworksQuarry implements ModInitializer {
 	public static final Item RANGE_UPGRADE = registerItem("range_upgrade", p -> new QuarryUpgradeItem(p, QuarryUpgradeItem.Type.RANGE));
 	public static final Item FORTUNE_UPGRADE = registerItem("fortune_upgrade", p -> new QuarryUpgradeItem(p, QuarryUpgradeItem.Type.FORTUNE));
 	public static final Item SILK_TOUCH_UPGRADE = registerItem("silk_touch_upgrade", p -> new QuarryUpgradeItem(p, QuarryUpgradeItem.Type.SILK_TOUCH));
-	/** Only used to draw the quarry's drill head and laser in the world; not obtainable. */
+	/** Only used to draw the quarry's gantry in the world; not obtainable. (The laser is no longer drawn; its id is kept.) */
 	public static final Item DRILL_HEAD = registerItem("drill_head", Item::new);
 	public static final Item LASER = registerItem("laser", Item::new);
+	public static final Item GANTRY_BEAM = registerItem("gantry_beam", Item::new);
+	public static final Item GANTRY_JOINT = registerItem("gantry_joint", Item::new);
+	public static final Item GANTRY_CARRIAGE = registerItem("gantry_carriage", Item::new);
+	public static final Item DRILL_SHAFT = registerItem("drill_shaft", Item::new);
+	/** Every render-only item, hidden from JEI. */
+	public static final java.util.List<Item> RENDER_ONLY = java.util.List.of(DRILL_HEAD, LASER, GANTRY_BEAM, GANTRY_JOINT, GANTRY_CARRIAGE, DRILL_SHAFT);
 
 	@Override
 	public void onInitialize() {

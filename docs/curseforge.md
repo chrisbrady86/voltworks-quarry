@@ -36,13 +36,14 @@ The launcher installs Required Dependencies for the player, so marking Voltworks
 ### Changelog for 0.1.0
 
 ```
-First release. Requires Voltworks Industrial 0.1.x.
+First release. Requires Voltworks Industrial 0.2.x.
 - Quarry: digs the 9x9 area behind it, layer by layer, down to bedrock, on Voltworks power (20 J/t)
 - Quarry Markers: mark any rectangle (up to the Range Upgrade limit) for the quarry to dig instead
 - Skips bedrock, clears water and lava, empties chests in the way into its output
 - Fills adjacent chests by itself; Voltworks item pipes pull from it; redstone pauses it
 - Upgrades: Range (up to 33x33), Fortune (I-III), Silk Touch; also takes Voltworks Speed, Capacity and Ejector upgrades
-- Drill head and laser show where it is digging
+- A steel gantry frames the pit while it works: a bridge and carriage follow the dig, with a shaft down to a spinning drill head
+- Quarry screen with a map of the current layer and a depth gauge
 - Adds Quarry pages to the Voltworks Guide; JEI info pages when JEI is installed
 ```
 
@@ -58,7 +59,9 @@ First release. Requires Voltworks Industrial 0.1.x.
 - Runs on **Voltworks power** through Copper Cable: 20 J/t while it digs. Harder blocks take longer.
 - **Bedrock** is skipped, **water and lava** are cleared, and **chests** in the way are emptied into its output. Nothing spills into the pit.
 - Put a **chest next to it** and it fills it by itself. Voltworks **item pipes** pull from it too, so you can send ores straight to your Crushers.
-- A **redstone signal** pauses it. A spinning **drill head on a laser** shows where it's digging.
+- A **redstone signal** pauses it.
+- While it works, a **steel gantry** frames the pit: a bridge and carriage follow the dig, and a shaft lowers a **spinning drill head** onto each block.
+- Its screen shows a **map of the current layer** and a **depth gauge**, so you can see how far down it is at a glance.
 - Works with the Voltworks **Wrench**: rotate it, set its sides, pick it up.
 - Want it somewhere else? Place a **Quarry Marker** touching the quarry and another at the opposite corner: it digs the rectangle between them instead.
 
@@ -76,7 +79,7 @@ The quarry shows up in the Voltworks creative tab, adds its own pages to the **V
 
 ## Requirements
 - Minecraft 26.3, Fabric Loader
-- [Voltworks Industrial](https://www.curseforge.com/minecraft/mc-mods/voltworks-industrial) 0.1.x
+- [Voltworks Industrial](https://www.curseforge.com/minecraft/mc-mods/voltworks-industrial) 0.2.x
 - [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
 - JEI (optional)
 
@@ -85,6 +88,7 @@ The quarry only digs while its chunks are loaded. Modpacks: yes, go ahead! Voltw
 
 ## Before you click upload
 
+- [ ] Publish Voltworks Industrial 0.2.0 first
 - [ ] Build Voltworks, then `./gradlew build` here, and take the fresh jar from `build/libs/`
 - [ ] Check the Voltworks Industrial CurseForge link above matches its real project URL
 - [ ] Test the jar once in a normal Minecraft install (Fabric Loader + Fabric API + Voltworks Industrial) to be sure it loads outside the dev environment
