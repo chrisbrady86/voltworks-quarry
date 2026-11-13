@@ -1,5 +1,5 @@
 Voltworks Quarry
-
+@items voltworks_quarry:quarry voltworks_quarry:drill_head
 Digs a square pit behind it, layer by layer, down to bedrock.
 
 The front faces you; the pit starts at the back.
@@ -20,6 +20,7 @@ A redstone signal pauses it.
 ---
 Marking an Area
 
+@items voltworks_quarry:quarry_marker
 To dig somewhere else, put a Quarry Marker touching the quarry and another at the opposite corner.
 
 The quarry picks both up and digs the rectangle between them, corners included.
@@ -28,6 +29,7 @@ Up to 9 across, 17/25/33 with Range upgrades.
 ---
 Upgrades
 
+@items voltworks_quarry:range_upgrade voltworks_quarry:fortune_upgrade voltworks_quarry:silk_touch_upgrade
 Range: +8 wide (up to 33x33).
 Fortune: one level each, up to III, +50% power.
 Silk Touch: blocks drop themselves, double power.

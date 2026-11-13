@@ -60,7 +60,7 @@ public class QuarryClientGameTest implements FabricClientGameTest {
 					System.out.println("[voltworks-quarry-test] trace: mined " + a.getBlocksMined() + " status " + a.getStatus() + " target " + a.getTarget() + " energy " + a.getEnergy());
 				});
 			}
-			List<String> failures = world.getServer().computeOnServer(QuarryClientGameTest::check);
+			List<String> failures = new java.util.ArrayList<>(world.getServer().computeOnServer(QuarryClientGameTest::check));
 
 			// The finished pit, then the GUI
 			world.getServer().runOnServer(server -> {
@@ -104,6 +104,14 @@ public class QuarryClientGameTest implements FabricClientGameTest {
 			context.runOnClient(client -> dev.voltworks.quarry.client.VoltworksQuarryClient.showRecipes.accept(new ItemStack(VoltworksQuarry.QUARRY)));
 			context.waitTicks(20);
 			context.takeScreenshot("quarry-jei");
+			// The Voltworks Guide, opened on the quarry's first page
+			List<String> titles = context.computeOnClient(client -> dev.voltworks.client.GuideScreen.loadPages().stream().map(p -> p.title()).toList());
+			int quarryPage = titles.indexOf("Voltworks Quarry");
+			if (quarryPage < 0) failures.add("The Voltworks Guide should include the quarry's pages: " + titles);
+			failures.addAll(context.computeOnClient(client -> dev.voltworks.client.GuideScreen.problems()));
+			context.runOnClient(client -> client.gui.setScreen(new dev.voltworks.client.GuideScreen(Math.max(0, quarryPage))));
+			context.waitTicks(10);
+			context.takeScreenshot("quarry-guide");
 			context.runOnClient(client -> client.gui.setScreen(null));
 
 			if (!failures.isEmpty()) {
