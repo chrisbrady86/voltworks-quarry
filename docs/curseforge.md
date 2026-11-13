@@ -14,10 +14,10 @@ Everything needed to create the Voltworks Quarry project and upload the first fi
 | License | MIT License |
 | Logo | `docs/images/logo.png` (400×400) |
 | Screenshots (Images tab) | From `docs/images/`: `quarry-digging.png`, `quarry-gantry.png`, `quarry-marked-area.png`, `quarry-gui.png` |
-
-The description below shows these same pictures straight from the GitHub repo (`raw.githubusercontent.com/.../main/docs/images/...`), so they appear once the images are pushed to GitHub.
 | Source link | https://github.com/chrisbrady86/voltworks-quarry |
 | Issues link | https://github.com/chrisbrady86/voltworks-quarry/issues |
+
+The description below shows these same pictures straight from the GitHub repo (`raw.githubusercontent.com/.../main/docs/images/...`), so they appear once the images are pushed to GitHub.
 
 ## First file upload
 
