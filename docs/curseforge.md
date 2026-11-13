@@ -13,7 +13,9 @@ Everything needed to create the Voltworks Quarry project and upload the first fi
 | Extra categories | Addons, Energy |
 | License | MIT License |
 | Logo | `docs/images/logo.png` (400×400) |
-| Screenshots | From `./gradlew runClientGameTest`: `build/run/clientGameTest/screenshots/` (`quarry-digging`, `quarry-pit`, `quarry-gui`, `quarry-jei`) |
+| Screenshots (Images tab) | From `docs/images/`: `quarry-digging.png`, `quarry-gantry.png`, `quarry-marked-area.png`, `quarry-gui.png` |
+
+The description below shows these same pictures straight from the GitHub repo (`raw.githubusercontent.com/.../main/docs/images/...`), so they appear once the images are pushed to GitHub.
 | Source link | https://github.com/chrisbrady86/voltworks-quarry |
 | Issues link | https://github.com/chrisbrady86/voltworks-quarry/issues |
 
@@ -54,6 +56,8 @@ First release. Requires Voltworks Industrial 0.2.x.
 
 **An expansion for [Voltworks Industrial](https://www.curseforge.com/minecraft/mc-mods/voltworks-industrial).** Plug a Quarry into your power grid and let it dig a pit all the way down to bedrock while you get on with building.
 
+![The Quarry's gantry digging a pit](https://raw.githubusercontent.com/chrisbrady86/voltworks-quarry/main/docs/images/quarry-digging.png)
+
 ## ⛏️ The Quarry
 - Place it, and it digs out the **9×9 area behind it**, layer by layer, from its own height down to the bottom of the world.
 - Runs on **Voltworks power** through Copper Cable: 20 J/t while it digs. Harder blocks take longer.
@@ -64,6 +68,12 @@ First release. Requires Voltworks Industrial 0.2.x.
 - Its screen shows a **map of the current layer** and a **depth gauge**, so you can see how far down it is at a glance.
 - Works with the Voltworks **Wrench**: rotate it, set its sides, pick it up.
 - Want it somewhere else? Place a **Quarry Marker** touching the quarry and another at the opposite corner: it digs the rectangle between them instead.
+
+![The gantry: bridge, carriage and drill head](https://raw.githubusercontent.com/chrisbrady86/voltworks-quarry/main/docs/images/quarry-gantry.png)
+
+![A quarry digging an area set with Quarry Markers](https://raw.githubusercontent.com/chrisbrady86/voltworks-quarry/main/docs/images/quarry-marked-area.png)
+
+![The quarry screen: output, upgrades, a map of the layer and a depth gauge](https://raw.githubusercontent.com/chrisbrady86/voltworks-quarry/main/docs/images/quarry-gui.png)
 
 ## 🔧 Upgrades
 | Upgrade | Effect |
