@@ -59,6 +59,8 @@ public class VoltworksQuarry implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		// Sneak + wrench picks the quarry up (see QuarryBlock.wrenchPickUp)
+		net.fabricmc.fabric.api.event.player.UseBlockCallback.EVENT.register(QuarryBlock::wrenchPickUp);
 		// Listed at the end of the Voltworks creative tab
 		CreativeModeTabEvents.modifyOutputEvent(ResourceKey.create(Registries.CREATIVE_MODE_TAB, Voltworks.id("main"))).register(out -> {
 			out.accept(QUARRY);

@@ -192,6 +192,11 @@ public class QuarryClientGameTest implements FabricClientGameTest {
 		set(level, pit(b, 0, 1, 0), Blocks.STONE);
 		set(level, pit(b, 1, 1, 0), Blocks.IRON_ORE);
 		set(level, pit(b, -1, 1, 0), Blocks.GRASS_BLOCK);
+		// A door standing in the pit, its top half in the first layer: digging top-down must still give the door
+		set(level, pit(b, 3, 1, 2), Blocks.STONE);
+		BlockState door = Blocks.OAK_DOOR.defaultBlockState();
+		level.setBlock(pit(b, 3, 1, 1), door.setValue(net.minecraft.world.level.block.DoorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER), Block.UPDATE_CLIENTS);
+		level.setBlock(pit(b, 3, 1, 0), door.setValue(net.minecraft.world.level.block.DoorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER), Block.UPDATE_CLIENTS);
 
 		// C: powered but held by a redstone signal
 		BlockPos c = o.offset(60, 0, 0);
@@ -293,6 +298,7 @@ public class QuarryClientGameTest implements FabricClientGameTest {
 		if (count(level, b, Items.IRON_ORE) < 1) fails.add("B: silk touch gave no iron ore");
 		if (count(level, b, Items.GRASS_BLOCK) < 1) fails.add("B: silk touch gave no grass block");
 		if (count(level, b, Items.RAW_IRON) > 0) fails.add("B: raw iron despite silk touch");
+		if (count(level, b, Items.OAK_DOOR) != 1) fails.add("B: a door dug from the top should give 1 door (got " + count(level, b, Items.OAK_DOOR) + ")");
 
 		// C
 		BlockPos c = o.offset(60, 0, 0);
@@ -343,6 +349,26 @@ public class QuarryClientGameTest implements FabricClientGameTest {
 		if (qh.hasMarkedArea()) fails.add("H: linked to a marker beyond its 9-block limit");
 		if (!level.getBlockState(h.east()).is(VoltworksQuarry.QUARRY_MARKER) || !level.getBlockState(h.offset(13, 0, -5)).is(VoltworksQuarry.QUARRY_MARKER)) {
 			fails.add("H: unpaired markers were removed");
+		}
+
+		// Sneak + wrench picks a quarry up, through the real right-click path (a fresh quarry above H)
+		BlockPos spare = h.above(4);
+		level.setBlockAndUpdate(spare, VoltworksQuarry.QUARRY.defaultBlockState());
+		net.minecraft.server.level.ServerPlayer player = server.getPlayerList().getPlayers().get(0);
+		ItemStack held = player.getMainHandItem().copy();
+		ItemStack wrench = new ItemStack(ModItems.WRENCH);
+		player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, wrench);
+		player.setShiftKeyDown(true);
+		player.gameMode.useItemOn(player, level, wrench, net.minecraft.world.InteractionHand.MAIN_HAND,
+				new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(spare).add(0, 0.5, 0), Direction.UP, spare, false));
+		player.setShiftKeyDown(false);
+		player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, held);
+		boolean pickedUp = level.getBlockState(spare).isAir() && player.getInventory().contains(new ItemStack(VoltworksQuarry.QUARRY));
+		System.out.println("[voltworks-quarry-test] Sneak + wrench on a quarry: picked up=" + pickedUp);
+		if (!pickedUp) fails.add("Sneak + wrench should pick the quarry up into the player's inventory");
+		level.removeBlock(spare, false);
+		for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+			if (player.getInventory().getItem(i).is(VoltworksQuarry.QUARRY.asItem())) player.getInventory().setItem(i, ItemStack.EMPTY);
 		}
 
 		System.out.println("[voltworks-quarry-test] A mined " + a.getBlocksMined() + ", now at Y " + a.getLayerY() + ", status " + a.getStatus());

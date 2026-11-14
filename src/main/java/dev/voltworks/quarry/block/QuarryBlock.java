@@ -1,9 +1,12 @@
 package dev.voltworks.quarry.block;
 
+import dev.voltworks.block.ItemPipeBlock;
 import dev.voltworks.block.MachineBlock;
 import dev.voltworks.item.WrenchItem;
+import dev.voltworks.quarry.VoltworksQuarry;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -25,22 +28,30 @@ public class QuarryBlock extends MachineBlock {
 	}
 
 	/**
-	 * Sneak + right-click with the Voltworks wrench picks the quarry up. (The wrench itself only picks up blocks from
-	 * the "voltworks" namespace.) Its inventory drops as usual when the block is removed.
+	 * Sneak + right-click with the Voltworks wrench picks the quarry up; its inventory drops as usual when the block
+	 * is removed. The wrench itself only picks up blocks from the "voltworks" namespace, and a sneaking player's click
+	 * never reaches the block's own use methods, so this runs from Fabric's block-use event
+	 * (registered in {@link VoltworksQuarry#onInitialize}).
 	 */
-	@Override
-	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
-			BlockHitResult hit) {
-		if (stack.getItem() instanceof WrenchItem && player.isSecondaryUseActive()) {
-			if (!level.isClientSide()) {
-				ItemStack drop = new ItemStack(asItem());
-				level.destroyBlock(pos, false, player, 512);
-				if (!player.getInventory().add(drop)) {
-					Block.popResource(level, pos, drop);
-				}
-			}
-			return InteractionResult.SUCCESS;
+	public static InteractionResult wrenchPickUp(Player player, Level level, InteractionHand hand, BlockHitResult hit) {
+		BlockPos pos = hit.getBlockPos();
+		if (player.isSpectator() || !player.isSecondaryUseActive() || !(player.getItemInHand(hand).getItem() instanceof WrenchItem)
+				|| !level.getBlockState(pos).is(VoltworksQuarry.QUARRY)) {
+			return InteractionResult.PASS;
 		}
-		return super.useItemOn(stack, state, level, pos, player, hand, hit);
+		// The face a pipe plugs into: leave it to the wrench, which toggles that arm's Extract (as on every machine)
+		Direction face = hit.getDirection();
+		BlockState pipe = level.getBlockState(pos.relative(face));
+		if (pipe.getBlock() instanceof ItemPipeBlock && ItemPipeBlock.get(pipe, face.getOpposite()).isOpen()) {
+			return InteractionResult.PASS;
+		}
+		if (!level.isClientSide()) {
+			ItemStack drop = new ItemStack(VoltworksQuarry.QUARRY);
+			level.destroyBlock(pos, false, player, 512);
+			if (!player.getInventory().add(drop)) {
+				Block.popResource(level, pos, drop);
+			}
+		}
+		return InteractionResult.SUCCESS;
 	}
 }

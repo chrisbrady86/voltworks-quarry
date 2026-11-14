@@ -34,6 +34,9 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
@@ -306,6 +309,7 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 		if (target == null && !findTarget(level)) {
 			return layerY < level.getMinY() ? Status.FINISHED : level.isLoaded(positionAt(layerIndex, layerY)) ? Status.MINING : Status.WAITING;
 		}
+		if (!level.isLoaded(target)) return Status.WAITING; // never load the chunk; carry on when it is back
 		BlockState state = level.getBlockState(target);
 		if (!shouldMine(level, target, state)) { // changed since we picked it
 			clearTarget(level);
@@ -375,7 +379,19 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 			}
 			container.clearContent();
 		}
-		drops.addAll(Block.getDrops(state, level, at, be, null, tool(level)));
+		List<ItemStack> blockDrops = Block.getDrops(state, level, at, be, null, tool(level));
+		if (blockDrops.isEmpty()) {
+			// The half of a door, bed or tall plant that drops nothing: removing it destroys the other half too,
+			// so collect that half's drop (digging top-down usually meets the top of a door first)
+			BlockPos other = otherHalf(state, at);
+			if (other != null && level.isLoaded(other)) {
+				BlockState otherState = level.getBlockState(other);
+				if (otherState.is(state.getBlock())) {
+					blockDrops = Block.getDrops(otherState, level, other, level.getBlockEntity(other), null, tool(level));
+				}
+			}
+		}
+		drops.addAll(blockDrops);
 		level.levelEvent(2001, at, Block.getId(state)); // break particles and sound
 		level.sendParticles(ParticleTypes.ELECTRIC_SPARK, at.getX() + 0.5, at.getY() + 1.0, at.getZ() + 0.5, 6, 0.3, 0.1, 0.3, 0.05);
 		level.setBlock(at, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
@@ -383,6 +399,18 @@ public class QuarryBlockEntity extends PoweredContainerBlockEntity implements En
 			ItemStack rest = insert(drop);
 			if (!rest.isEmpty()) overflow.add(rest);
 		}
+	}
+
+	/** Where the other half of a two-block block (door, tall plant, bed) is, or null if {@code state} isn't one. */
+	private static @Nullable BlockPos otherHalf(BlockState state, BlockPos at) {
+		if (state.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) {
+			return state.getValue(BlockStateProperties.DOUBLE_BLOCK_HALF) == DoubleBlockHalf.UPPER ? at.below() : at.above();
+		}
+		if (state.hasProperty(BlockStateProperties.BED_PART) && state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
+			Direction facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+			return at.relative(state.getValue(BlockStateProperties.BED_PART) == BedPart.FOOT ? facing : facing.getOpposite());
+		}
+		return null;
 	}
 
 	/** Puts a stack into the output slots, merging first. Returns what didn't fit. */
